@@ -6,4 +6,6 @@ module com.example.dbclientapp {
 
     opens com.example.dbclientapp to javafx.fxml;
     exports com.example.dbclientapp;
+    exports Controller;
+    opens Controller to javafx.fxml;
 }
