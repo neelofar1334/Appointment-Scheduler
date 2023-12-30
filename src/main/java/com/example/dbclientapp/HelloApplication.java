@@ -3,6 +3,7 @@ package com.example.dbclientapp;
 import DAO.JDBC;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
@@ -21,7 +22,7 @@ public class HelloApplication extends Application {
         ResourceBundle rb = ResourceBundle.getBundle("lang", Locale.getDefault());
 
         //Set FXML loader with correct resource bundle
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("/LogIn.fxml"), rb);
+        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("/View/LogIn.fxml"), rb);
 
         Scene scene = new Scene(fxmlLoader.load());
         stage.setTitle(rb.getString("label.login"));
@@ -31,10 +32,11 @@ public class HelloApplication extends Application {
 
     public static void main(String[] args) {
 
-        launch();
+        //JDBC.openConnection(); //open database connection before launch() is called
 
-        JDBC.openConnection();
-        JDBC.closeConnection();
+        launch(args);
+
+        //JDBC.closeConnection();
 
     }
 }

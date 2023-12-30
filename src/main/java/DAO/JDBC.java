@@ -2,6 +2,7 @@ package DAO;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 
 public abstract class JDBC {
     private static final String protocol = "jdbc";
@@ -10,29 +11,35 @@ public abstract class JDBC {
     private static final String databaseName = "client_schedule";
     private static final String jdbcUrl = protocol + vendor + location + databaseName + "?connectionTimeZone = SERVER"; // LOCAL
     private static final String driver = "com.mysql.cj.jdbc.Driver"; // Driver reference
-    private static final String userName = "sqlUser"; // Username
-    private static String password = "Passw0rd!"; // Password
-    public static Connection connection;  // Connection Interface
+    private static final String DB_userName = "sqlUser"; // Username
+    private static String DB_password = "Passw0rd!"; // Password
 
-    public static void openConnection()
-    {
+    /**
+     * Opens mysql database connection
+     */
+    public static Connection openConnection() throws ClassNotFoundException, SQLException {
+        Connection connection = null; //local connection object
         try {
             Class.forName(driver); // Locate Driver
-            connection = DriverManager.getConnection(jdbcUrl, userName, password); // Reference Connection object
+            connection = DriverManager.getConnection(jdbcUrl, DB_userName, DB_password); // Reference Connection object
             System.out.println("Connection successful!");
         }
-        catch(Exception e)
+        catch(ClassNotFoundException | SQLException e)
         {
             System.out.println("Error:" + e.getMessage());
         }
+        return connection;
     }
 
-    public static void closeConnection() {
+    /**
+     * closes mysql database connection
+     */
+    public static void closeConnection(Connection conn) {
         try {
-            connection.close();
+            conn.close();
             System.out.println("Connection closed!");
         }
-        catch(Exception e)
+        catch(SQLException e)
         {
             System.out.println("Error:" + e.getMessage());
         }
