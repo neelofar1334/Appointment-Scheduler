@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<TabPane fx:id="modifyContact" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="447.0" tabClosingPolicy="UNAVAILABLE" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/17" fx:controller="Controller.ModifyCustomerController">
+  <tabs>
+      <Tab fx:id="addCustomerTab" text="Add Customer">
+         <content>
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="463.0">
+               <children>
+                  <Label layoutX="129.0" layoutY="23.0" text="Add Customer">
+                     <font>
+                        <Font name="System Bold" size="28.0" />
+                     </font>
+                  </Label>
+                  <HBox layoutX="98.0" layoutY="80.0" spacing="20.0">
+                     <children>
+                        <VBox spacing="13.0">
+                           <children>
+                              <Label text="Customer ID" />
+                              <Label text="Name" />
+                              <Label text="Address" />
+                              <Label text="Postal Code" />
+                              <Label text="State" />
+                              <Label text="Country" />
+                              <Label text="Phone Number" />
+                           </children>
+                        </VBox>
+                        <VBox spacing="5.0">
+                           <children>
+                              <TextField fx:id="addCustIDField" editable="false" promptText="Auto-Generated" />
+                              <TextField fx:id="addNameField" />
+                              <TextField fx:id="addAddressField" />
+                              <TextField fx:id="addPostalCodeField" />
+                              <ComboBox fx:id="addStateCombo" onAction="#handleAddStateCombo" prefWidth="150.0" />
+                              <ComboBox fx:id="addCountryCombo" onAction="#handleAddCountryCombo" prefWidth="150.0" />
+                              <TextField fx:id="addPhoneField" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+                  <HBox layoutX="119.0" layoutY="314.0" spacing="15.0">
+                     <children>
+                        <Button fx:id="saveButton" mnemonicParsing="false" onAction="#handleSaveButton" text="Save" />
+                        <Button fx:id="customerMenuButton1" mnemonicParsing="false" onAction="#handleCustomerMenuButton" text="All Customers" />
+                        <Button fx:id="homeButton1" mnemonicParsing="false" onAction="#handleHomeButton" text="Home" />
+                     </children>
+                  </HBox>
+               </children>
+            </AnchorPane>
+         </content>
+      </Tab>
+      <Tab fx:id="updateCustomerTab" text="Update Customer">
+         <content>
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="463.0">
+               <children>
+                  <Label layoutX="129.0" layoutY="23.0" text="Update Customer">
+                     <font>
+                        <Font name="System Bold" size="28.0" />
+                     </font>
+                  </Label>
+                  <HBox layoutX="98.0" layoutY="80.0" spacing="20.0">
+                     <children>
+                        <VBox spacing="13.0">
+                           <children>
+                              <Label text="Customer ID" />
+                              <Label text="Name" />
+                              <Label text="Address" />
+                              <Label text="Postal Code" />
+                              <Label text="State" />
+                              <Label text="Country" />
+                              <Label text="Phone Number" />
+                           </children>
+                        </VBox>
+                        <VBox spacing="5.0">
+                           <children>
+                              <TextField fx:id="updateCustIDField" editable="false" promptText="Auto-Generated" />
+                              <TextField fx:id="updateNameField" />
+                              <TextField fx:id="updateAddressField" />
+                              <TextField fx:id="updatePostalCodeField" />
+                              <ComboBox fx:id="updateStateCombo" onAction="#handleUpdateStateCombo" prefWidth="150.0" />
+                              <ComboBox fx:id="updateCountryCombo" onAction="#handleUpdateCountryCombo" prefWidth="150.0" />
+                              <TextField fx:id="updatePhoneField" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+                  <HBox layoutX="119.0" layoutY="314.0" spacing="15.0">
+                     <children>
+                        <Button fx:id="saveButton2" mnemonicParsing="false" onAction="#handleSaveButton" text="Save" />
+                        <Button fx:id="customerMenuButton2" mnemonicParsing="false" onAction="#handleCustomerMenuButton" text="All Customers" />
+                        <Button fx:id="homeButton2" mnemonicParsing="false" onAction="#handleHomeButton" text="Home" />
+                     </children>
+                  </HBox>
+               </children>
+            </AnchorPane>
+         </content>
+      </Tab>
+  </tabs>
+</TabPane>

@@ -6,13 +6,20 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ResourceBundle;
 import java.time.ZoneId;
+import javafx.stage.Stage;
+import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Button;
+import java.io.IOException;
+import javafx.event.ActionEvent;
+
 
 public class LogInController {
 
@@ -20,9 +27,6 @@ public class LogInController {
     private ResourceBundle resources;
     @FXML
     private Label locationLabel;
-
-    @FXML
-    private Label loginLabel;
 
     @FXML
     private Label errorLabel;
@@ -40,9 +44,6 @@ public class LogInController {
 
         //set text of locationLabel to user's location
         locationLabel.setText(zoneId.toString());
-
-
-
 
     }
     @FXML
@@ -63,9 +64,28 @@ public class LogInController {
         //validate credentials
         if (isValidLogin(usernameField.getText(), passwordField.getText())) {
             errorLabel.setText(resources.getString("login.success"));
+
+            //go to directory/main menu
+            System.out.println("submit button clicked");
+
+            Stage stage = (Stage)((Button)event.getSource()).getScene().getWindow();
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/View/DirectoryScreen.fxml"));
+                AnchorPane root = loader.load();
+
+                // Access the controller
+                DirectoryController directoryController = loader.getController();
+
+                stage.setScene(new Scene(root));
+                stage.show();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         } else {
             errorLabel.setText(resources.getString("error.login.invalid"));
         }
+
     }
 
         /**
