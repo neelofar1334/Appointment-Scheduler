@@ -18,11 +18,11 @@
       </Label>
       <TableView fx:id="customerTableView" layoutX="8.0" layoutY="80.0" prefHeight="240.0" prefWidth="585.0">
          <columns>
-            <TableColumn fx:id="custIDColumn" prefWidth="66.0" text="Customer ID" />
-            <TableColumn fx:id="nameColumn" minWidth="0.0" prefWidth="50.0" text="Name" />
-            <TableColumn fx:id="addressColumn" prefWidth="75.0" text="Address" />
-            <TableColumn fx:id="postalCodeColumn" prefWidth="75.0" text="Postal Code" />
-            <TableColumn fx:id="phoneNumberColumn" prefWidth="75.0" text="Phone Number" />
+            <TableColumn fx:id="custIDColumn" prefWidth="66.0" text="Customer ID" cellValueFactory="Customer_ID"/>
+            <TableColumn fx:id="nameColumn" minWidth="0.0" prefWidth="50.0" text="Name" cellValueFactory="Customer_Name"/>
+            <TableColumn fx:id="addressColumn" prefWidth="75.0" text="Address" cellValueFactory="Address"/>
+            <TableColumn fx:id="postalCodeColumn" prefWidth="75.0" text="Postal Code" cellValueFactory="Postal_Code"/>
+            <TableColumn fx:id="phoneNumberColumn" prefWidth="75.0" text="Phone Number" cellValueFactory="Phone"/>
          </columns>
          <columnResizePolicy>
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
