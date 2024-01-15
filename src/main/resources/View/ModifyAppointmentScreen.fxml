@@ -46,8 +46,8 @@
                               <TextField fx:id="locationField" />
                               <ComboBox fx:id="contactNameCombo" onAction="#handleContactCombo" prefWidth="150.0" />
                               <TextField fx:id="typeField" />
-                              <TextField fx:id="startApptField" />
-                              <TextField fx:id="endApptField" />
+                              <TextField fx:id="startApptField" text="yyyy-MM-dd HH:mm:ss" />
+                              <TextField fx:id="endApptField" text="yyyy-MM-dd HH:mm:ss" />
                               <TextField fx:id="customerIDField" />
                               <TextField fx:id="userIDField" />
                            </children>
@@ -97,8 +97,8 @@
                               <TextField fx:id="updateLocationField" />
                               <ComboBox fx:id="updateContactNameCombo" onAction="#handleUpdateContactCombo" prefWidth="150.0" />
                               <TextField fx:id="updateTypeField" />
-                              <TextField fx:id="updateStartApptField" />
-                              <TextField fx:id="updateEndApptField" />
+                              <TextField fx:id="updateStartApptField" text="yyyy-MM-dd HH:mm:ss" />
+                              <TextField fx:id="updateEndApptField" text="yyyy-MM-dd HH:mm:ss" />
                               <TextField fx:id="updateCustomerIDField" />
                               <TextField fx:id="updateUserIDField" />
                            </children>

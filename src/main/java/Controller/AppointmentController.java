@@ -1,6 +1,8 @@
 package Controller;
 import DAO.Query;
 import Model.Appointments;
+import Model.Customers;
+import Model.Dialogs;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -123,6 +125,7 @@ public class AppointmentController {
 
             // Access the controller and pass the tab index to open
             ModifyApptController modifyApptController = loader.getController();
+            modifyApptController.populateContactCombo(); //populate contact combo box
             modifyApptController.selectTab(tabToOpenIndex); // Dynamically select the tab
 
             stage.setScene(new Scene(root));
@@ -157,6 +160,36 @@ public class AppointmentController {
     @FXML
     void handleUpdateApptButton(ActionEvent event) {
 
+        // Identify which customer has been selected
+        Appointments selectedAppointment = apptTableView.getSelectionModel().getSelectedItem();
+
+        if (selectedAppointment != null) {
+            try {
+                // Load the modify appt screen
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/View/ModifyAppointmentScreen.fxml"));
+                TabPane root = loader.load();
+                ModifyApptController modifyApptController = loader.getController();
+
+                // Set the current appt and initialize the form
+                modifyApptController.setCurrentAppt(selectedAppointment);
+                modifyApptController.initializeUpdateAppt(selectedAppointment);
+
+                // Set the scene and show the stage
+                Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
+                stage.setScene(new Scene(root));
+
+                // select the update appt tab
+                int tabToOpenIndex = 1;
+                modifyApptController.selectTab(tabToOpenIndex);
+
+                stage.show();
+            } catch (IOException e) {
+                e.printStackTrace();
+                Dialogs.showErrorDialog("Error", "Failed to load the update screen.");
+            }
+        } else {
+            Dialogs.showErrorDialog("Selection Error", "Please select an appointment to update.");
+        }
 
     }
 

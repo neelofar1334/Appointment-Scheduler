@@ -8,6 +8,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.time.*;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -32,11 +33,8 @@ public class HelloApplication extends Application {
 
     public static void main(String[] args) {
 
-        //JDBC.openConnection(); //open database connection before launch() is called
-
         launch(args);
 
-        //JDBC.closeConnection();
 
     }
 }

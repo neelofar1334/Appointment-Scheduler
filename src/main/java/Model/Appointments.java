@@ -1,11 +1,8 @@
 package Model;
-
-
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-
 import java.time.LocalDateTime;
 
 public class Appointments {
@@ -36,6 +33,7 @@ public class Appointments {
     }
 
 
+
     public int getAppointmentId() {
         return appointmentId.get();
     }
@@ -43,6 +41,7 @@ public class Appointments {
     public ReadOnlyIntegerProperty appointmentIdProperty() {
         return appointmentId;
     }
+
 
     public String getTitle() {
         return Title.get();

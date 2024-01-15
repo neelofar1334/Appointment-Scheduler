@@ -96,7 +96,7 @@
                   </HBox>
                   <HBox layoutX="119.0" layoutY="314.0" spacing="15.0">
                      <children>
-                        <Button fx:id="saveButton2" mnemonicParsing="false" onAction="#handleSaveButton" text="Save" />
+                        <Button fx:id="saveButton2" mnemonicParsing="false" onAction="#handleSaveButton2" text="Save" />
                         <Button fx:id="customerMenuButton2" mnemonicParsing="false" onAction="#handleCustomerMenuButton" text="All Customers" />
                         <Button fx:id="homeButton2" mnemonicParsing="false" onAction="#handleHomeButton" text="Home" />
                      </children>
