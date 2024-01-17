@@ -108,6 +108,24 @@ public class AppointmentController {
     @FXML
     void handleDeleteApptButton(ActionEvent event) {
 
+        //get selected appt
+        Appointments selectedAppointment = apptTableView.getSelectionModel().getSelectedItem();
+        if (selectedAppointment == null) {
+            Dialogs.showErrorDialog("Error", "No appointment selected");
+            return;
+        }
+
+        int appointmentId = selectedAppointment.getAppointmentId();
+        String appointmentType = selectedAppointment.getType();
+
+        //delete appt
+        boolean success = Query.deleteAppointment(selectedAppointment.getAppointmentId());
+        if (success) {
+            Dialogs.showSuccessDialog("Success", "Appointment cancelled successfully.\nAppointment ID: " + selectedAppointment.getAppointmentId() + "\nType: " + selectedAppointment.getType());
+            loadAllAppointments(); // Refresh the TableView
+        } else {
+            Dialogs.showErrorDialog("Error", "Failed to cancel appointment.");
+        }
     }
 
     @FXML

@@ -357,7 +357,20 @@ public class Query {
         return -1; // not found indicator
     }
 
+    // Method to delete selected appointment
+    public static boolean deleteAppointment(int appointmentId) {
+        String sql = "DELETE FROM appointments WHERE Appointment_ID = ?";
+        try (Connection conn = JDBC.openConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
+            pstmt.setInt(1, appointmentId);
+            int affectedRows = pstmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
 }
 

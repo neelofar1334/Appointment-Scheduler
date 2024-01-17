@@ -10,7 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
-
+import javafx.beans.property.SimpleObjectProperty;
 import java.io.IOException;
 import java.net.URL;
 import java.time.*;
@@ -145,6 +145,41 @@ public class ModifyApptController {
             updateContactNameCombo.getSelectionModel().select(contactName);
         }
 
+        //handles format of date/time fields
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.US);
+
+        //convert UTC to local time before formatting
+        LocalDateTime localStart;
+        if (appointments.getStart() != null) {
+            localStart = convertToLT(appointments.getStart());
+        } else {
+            localStart = null;
+        }
+
+        LocalDateTime localEnd;
+        if (appointments.getEnd() != null) {
+            localEnd = convertToLT(appointments.getEnd());
+        } else {
+            localEnd = null;
+        }
+
+        String formattedStartDateTime;
+        if (localStart != null) {
+            formattedStartDateTime = localStart.format(formatter);
+        } else {
+            formattedStartDateTime = "";
+        }
+
+        String formattedEndDateTime;
+        if (localEnd != null) {
+            formattedEndDateTime = localEnd.format(formatter);
+        } else {
+            formattedEndDateTime = "";
+        }
+
+        updateStartApptField.setText(formattedStartDateTime);
+        updateEndApptField.setText(formattedEndDateTime);
+
     }
     @FXML
     void handleApptsMenuButton(ActionEvent event) {
@@ -197,7 +232,7 @@ public class ModifyApptController {
     @FXML
     void handleSaveButton(ActionEvent event) {
 
-        //handles date/time fields
+        //handles format of date/time fields
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.US);
 
         //gets contact name for combo box
@@ -218,7 +253,7 @@ public class ModifyApptController {
 
         try {
             System.out.println("Parsing string: '" + startApptField.getText() + "'");
-            startAppt = LocalDateTime.parse(startApptField.getText(), formatter);
+            startAppt = LocalDateTime.parse(startApptField.getText(), formatter).atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Debug: Error parsing startAppt");
@@ -227,7 +262,7 @@ public class ModifyApptController {
 
         try {
             System.out.println("Parsing string: '" + endApptField.getText() + "'");
-            endAppt = LocalDateTime.parse(endApptField.getText(), formatter);
+            endAppt = LocalDateTime.parse(endApptField.getText(), formatter).atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Debug: Error parsing endAppt");
@@ -292,11 +327,21 @@ public class ModifyApptController {
         //handles date/time field formatting
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.US);
 
-        //parse start/end date/time
-        LocalDateTime updatedStart = parseDateTime(updateStartApptField.getText(), formatter);
-        LocalDateTime updatedEnd = parseDateTime(updateEndApptField.getText(), formatter);
-        if (updatedStart == null || updatedEnd == null) {
-            System.out.println("Debug: Error parsing dates");
+        // Parse/convert the start date/time to UTC
+        LocalDateTime updatedStart;
+        try {
+            updatedStart = LocalDateTime.parse(updateStartApptField.getText(), formatter).atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+        } catch (DateTimeParseException e) {
+            Dialogs.showErrorDialog("Error", "Invalid start date/time format.");
+            return;
+        }
+
+        // Parse/convert the end date/time to UTC
+        LocalDateTime updatedEnd;
+        try {
+            updatedEnd = LocalDateTime.parse(updateEndApptField.getText(), formatter).atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+        } catch (DateTimeParseException e) {
+            Dialogs.showErrorDialog("Error", "Invalid end date/time format.");
             return;
         }
 
