@@ -1,8 +1,13 @@
 package Controller;
+import DAO.AppointmentQuery;
 import DAO.Query;
+import DAO.User_DAO_Impl;
 import Model.Appointments;
 import Model.Customers;
 import Model.Dialogs;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -14,11 +19,11 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import java.io.IOException;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.YearMonth;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
+import java.util.Locale;
+
 import javafx.scene.control.ToggleGroup;
 
 
@@ -95,6 +100,8 @@ public class AppointmentController {
         userIDColumn.setCellValueFactory(new PropertyValueFactory<>("User_ID"));
         contactColumn.setCellValueFactory(new PropertyValueFactory<>("Contact_ID"));
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.US);
+
         //method to load all appointments
         loadAllAppointments();
 
@@ -119,7 +126,7 @@ public class AppointmentController {
         String appointmentType = selectedAppointment.getType();
 
         //delete appt
-        boolean success = Query.deleteAppointment(selectedAppointment.getAppointmentId());
+        boolean success = AppointmentQuery.deleteAppointment(selectedAppointment.getAppointmentId());
         if (success) {
             Dialogs.showSuccessDialog("Success", "Appointment cancelled successfully.\nAppointment ID: " + selectedAppointment.getAppointmentId() + "\nType: " + selectedAppointment.getType());
             loadAllAppointments(); // Refresh the TableView
@@ -221,13 +228,8 @@ public class AppointmentController {
         filterAppointments("week");
     }
 
-    /**
-     * method for loading tableview with all appointments
-     *
-     */
     private void loadAllAppointments() {
-
-        allAppointments = Query.getAllAppointments();
+        allAppointments = AppointmentQuery.getAllAppointments();
         apptTableView.setItems(allAppointments);
     }
 
@@ -272,6 +274,22 @@ public class AppointmentController {
         LocalDate startOfMonth = yearMonth.atDay(1);
         LocalDate endOfMonth = yearMonth.atEndOfMonth();
         return !Start.isBefore(startOfMonth) && !Start.isAfter(endOfMonth);
+    }
+
+    public void refreshTableView() {
+
+        allAppointments.clear();
+        allAppointments.addAll(AppointmentQuery.getAllAppointments());
+
+        for (Appointments appointment : allAppointments) {
+            // Convert UTC times to local times
+            LocalDateTime startLocal = User_DAO_Impl.convertFromUTC(appointment.getStart(), ZoneId.systemDefault());
+            LocalDateTime endLocal = User_DAO_Impl.convertFromUTC(appointment.getEnd(), ZoneId.systemDefault());
+            appointment.setStart(startLocal);
+            appointment.setEnd(endLocal);
+        }
+
+        apptTableView.setItems(allAppointments);
     }
 
 

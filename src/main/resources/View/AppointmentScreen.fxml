@@ -11,16 +11,16 @@
 <?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import javafx.scene.control.ToggleGroup?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.AppointmentController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.AppointmentController">
    <children>
       <Label layoutX="207.0" layoutY="14.0" text="Appointments">
          <font>
             <Font name="System Bold" size="28.0" />
          </font>
       </Label>
-       <TableView fx:id="apptTableView" layoutX="9.0" layoutY="83.0" prefHeight="240.0" prefWidth="585.0">
+       <TableView fx:id="apptTableView" layoutX="9.0" layoutY="83.0" prefHeight="240.0" prefWidth="790.0">
            <columns>
-               <TableColumn fx:id="apptIDColumn" prefWidth="75.0" text="Appointment ID">
+               <TableColumn fx:id="apptIDColumn" prefWidth="50.0" text="Appointment ID">
                    <cellValueFactory>
                        <PropertyValueFactory property="appointmentId"/>
                    </cellValueFactory>
@@ -40,7 +40,7 @@
                        <PropertyValueFactory property="location" />
                    </cellValueFactory>
                </TableColumn>
-               <TableColumn fx:id="contactColumn" prefWidth="75.0" text="Contact">
+               <TableColumn fx:id="contactColumn" prefWidth="20.0" text="Contact">
                    <cellValueFactory>
                        <PropertyValueFactory property="contactId" />
                    </cellValueFactory>
@@ -50,22 +50,22 @@
                        <PropertyValueFactory property="type" />
                    </cellValueFactory>
                </TableColumn>
-               <TableColumn fx:id="startApptColumn" prefWidth="75.0" text="Start">
+               <TableColumn fx:id="startApptColumn" prefWidth="85.0" text="Start">
                    <cellValueFactory>
                        <PropertyValueFactory property="start" />
                    </cellValueFactory>
                </TableColumn>
-               <TableColumn fx:id="endApptColumn" prefWidth="75.0" text="End">
+               <TableColumn fx:id="endApptColumn" prefWidth="85.0" text="End">
                    <cellValueFactory>
                        <PropertyValueFactory property="end" />
                    </cellValueFactory>
                </TableColumn>
-               <TableColumn fx:id="customerIDColumn" prefWidth="75.0" text="Customer ID">
+               <TableColumn fx:id="customerIDColumn" prefWidth="20.0" text="Customer ID">
                    <cellValueFactory>
                        <PropertyValueFactory property="customerId" />
                    </cellValueFactory>
                </TableColumn>
-               <TableColumn fx:id="userIDColumn" prefWidth="75.0" text="User ID">
+               <TableColumn fx:id="userIDColumn" prefWidth="20.0" text="User ID">
                <cellValueFactory>
                    <PropertyValueFactory property="userId" />
                </cellValueFactory>

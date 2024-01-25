@@ -125,5 +125,21 @@ public class Dialogs {
         return true;
     }
 
+    public static void showUpcomingAppointmentAlert(int appointmentId, LocalDateTime date) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Upcoming Appointment Alert");
+        alert.setHeaderText("You have an upcoming appointment.");
+        alert.setContentText("Appointment ID: " + appointmentId +
+                "\nDate: " + date.toLocalDate() +
+                "\nTime: " + date.toLocalTime());
+        alert.showAndWait();
+    }
 
+    public static void showNoUpcomingAppointmentsAlert() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Appointment Check");
+        alert.setHeaderText("No Upcoming Appointments");
+        alert.setContentText("You have no upcoming appointments in the next 15 minutes.");
+        alert.showAndWait();
+    }
 }

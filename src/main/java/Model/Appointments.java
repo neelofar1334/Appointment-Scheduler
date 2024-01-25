@@ -18,7 +18,6 @@ public class Appointments {
     private final SimpleIntegerProperty User_ID;
     private final SimpleIntegerProperty Contact_ID;
 
-
     public Appointments(int appointmentId, String title, String description, String location, String type, LocalDateTime start, LocalDateTime end, int customerId, int userId, int contactId) {
         this.appointmentId = new SimpleIntegerProperty(appointmentId);
         this.Title = new SimpleStringProperty(title);
@@ -31,8 +30,6 @@ public class Appointments {
         this.User_ID = new SimpleIntegerProperty(userId);
         this.Contact_ID = new SimpleIntegerProperty(contactId);
     }
-
-
 
     public int getAppointmentId() {
         return appointmentId.get();

@@ -1,5 +1,7 @@
 package Controller;
+import DAO.AppointmentQuery;
 import DAO.Query;
+import DAO.User_DAO_Impl;
 import Model.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -10,16 +12,16 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
-import javafx.beans.property.SimpleObjectProperty;
 import java.io.IOException;
 import java.net.URL;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-
 import static DAO.Query.getAllContacts;
+import java.time.ZoneId;
 
 public class ModifyApptController {
 
@@ -94,6 +96,7 @@ public class ModifyApptController {
     private ObservableList<Contacts> allContacts = FXCollections.observableArrayList(); //holds all contacts from database
     private ObservableList<Appointments> allAppointments = FXCollections.observableArrayList(); //holds all appointments from database
 
+
     public void initialize(URL url, ResourceBundle resourceBundle) {
         initializeAddAppt();
         populateContactCombo();
@@ -137,48 +140,13 @@ public class ModifyApptController {
 
         //get specific contact name for specific appt
         Query query = new Query();
-        String contactName = query.getContactNameForAppointment(appointments.getAppointmentId());
+        String contactName = AppointmentQuery.getContactNameForAppointment(appointments.getAppointmentId());
 
         populateContactCombo();
 
         if (contactName != null) {
             updateContactNameCombo.getSelectionModel().select(contactName);
         }
-
-        //handles format of date/time fields
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.US);
-
-        //convert UTC to local time before formatting
-        LocalDateTime localStart;
-        if (appointments.getStart() != null) {
-            localStart = convertToLT(appointments.getStart());
-        } else {
-            localStart = null;
-        }
-
-        LocalDateTime localEnd;
-        if (appointments.getEnd() != null) {
-            localEnd = convertToLT(appointments.getEnd());
-        } else {
-            localEnd = null;
-        }
-
-        String formattedStartDateTime;
-        if (localStart != null) {
-            formattedStartDateTime = localStart.format(formatter);
-        } else {
-            formattedStartDateTime = "";
-        }
-
-        String formattedEndDateTime;
-        if (localEnd != null) {
-            formattedEndDateTime = localEnd.format(formatter);
-        } else {
-            formattedEndDateTime = "";
-        }
-
-        updateStartApptField.setText(formattedStartDateTime);
-        updateEndApptField.setText(formattedEndDateTime);
 
     }
     @FXML
@@ -229,73 +197,91 @@ public class ModifyApptController {
         }
     }
 
+    /**
+     * handles saving a new appointment
+     * @param event
+     */
     @FXML
     void handleSaveButton(ActionEvent event) {
 
-        //handles format of date/time fields
+        // Parse the start and end date/time from UI elements
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.US);
-
-        //gets contact name for combo box
-        String selectedContactName = contactNameCombo.getValue();
-        Contacts selectedContact = findContactByName(selectedContactName);
-
-        String title = titleField.getText();
-        String description = descriptionField.getText();
-        String location = locationField.getText();
-        String type = typeField.getText();
-
-        if (selectedContact == null) {
-            System.out.println("no selected contact");
-            return;
-        }
-
         LocalDateTime startAppt, endAppt;
 
         try {
-            System.out.println("Parsing string: '" + startApptField.getText() + "'");
-            startAppt = LocalDateTime.parse(startApptField.getText(), formatter).atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+            startAppt = LocalDateTime.parse(startApptField.getText(), formatter);
+            endAppt = LocalDateTime.parse(endApptField.getText(), formatter);
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("Debug: Error parsing startAppt");
+            System.out.println("Debug: Error parsing start/end time");
+            Dialogs.showErrorDialog("Error", "Invalid date/time format.");
             return;
         }
 
-        try {
-            System.out.println("Parsing string: '" + endApptField.getText() + "'");
-            endAppt = LocalDateTime.parse(endApptField.getText(), formatter).atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Debug: Error parsing endAppt");
+        // Get contact details
+        String selectedContactName = contactNameCombo.getValue();
+        Contacts selectedContact = findContactByName(selectedContactName);
+        if (selectedContact == null) {
+            System.out.println("no selected contact");
+            Dialogs.showErrorDialog("Error", "No contact selected.");
             return;
         }
 
-        int customerId, userId;
-        Contacts contacts;
-        int contactId = selectedContact.getContactId();
-        String contactName = selectedContact.getContactName();
+        int customerId = -1;
+        int userId = -1;
 
         try {
+            // Parse customer ID
             customerId = Integer.parseInt(customerIDField.getText());
         } catch (NumberFormatException e) {
-            System.out.println("Debug: Error parsing customerId");
+            System.err.println("Error parsing customer ID: " + e.getMessage());
+            Dialogs.showErrorDialog("Error", "Invalid customer ID format.");
             return;
         }
 
         try {
+            // Parse user ID
             userId = Integer.parseInt(userIDField.getText());
         } catch (NumberFormatException e) {
-            System.out.println("Debug: Error parsing userId");
+            System.err.println("Error parsing user ID: " + e.getMessage());
+            Dialogs.showErrorDialog("Error", "Invalid user ID format.");
             return;
         }
 
-        //validates input
-        if (!Dialogs.isApptValid(title, description, location, type, contactName, startAppt, endAppt, customerId, userId)) {
+        // User's local time zone
+        ZoneId userLocalZoneId = ZoneId.systemDefault();
+
+        // Convert local times to ET for business hour validation
+        LocalDateTime startET = User_DAO_Impl.convertToET(startAppt, userLocalZoneId);
+        LocalDateTime endET = User_DAO_Impl.convertToET(endAppt, userLocalZoneId);
+
+        // Validate business hours in ET
+        if (!User_DAO_Impl.isWithinBusinessHours(startET) || !User_DAO_Impl.isWithinBusinessHours(endET)) {
+            Dialogs.showErrorDialog("Error", "Appointment time must be within business hours (8:00 AM to 10:00 PM ET).");
             return;
         }
 
-        // adds appointment with the contactId
-        boolean success = Query.addAppointment(title, description, location, type, startAppt, endAppt, customerId, userId, contactId);
+        // Convert ET times to local times for table view
+        startAppt = User_DAO_Impl.convertFromET(startET, userLocalZoneId);
+        endAppt = User_DAO_Impl.convertFromET(endET, userLocalZoneId);
 
+        // Check for overlapping appointments
+        if (hasOverlappingAppointment(customerId, startAppt, endAppt, -1)) {
+            Dialogs.showErrorDialog("Error", "This appointment overlaps with another appointment for this customer.");
+            return;
+        }
+
+        // Convert local times to UTC for storage
+        LocalDateTime startUTC = User_DAO_Impl.convertToUTC(startAppt, ZoneId.systemDefault());
+        LocalDateTime endUTC = User_DAO_Impl.convertToUTC(endAppt, ZoneId.systemDefault());
+
+        // Validates input
+        if (!Dialogs.isApptValid(titleField.getText(), descriptionField.getText(), locationField.getText(), typeField.getText(), selectedContact.getContactName(), startAppt, endAppt, customerId, userId)) {
+            return;
+        }
+
+        // Adds appointment with the contactId
+        boolean success = AppointmentQuery.addAppointment(titleField.getText(), descriptionField.getText(), locationField.getText(), typeField.getText(), startUTC, endUTC, customerId, userId, selectedContact.getContactId());
         if (success) {
             Dialogs.showSuccessDialog("Success", "Appointment was added");
         } else {
@@ -303,14 +289,15 @@ public class ModifyApptController {
         }
     }
 
+
+
     /**
      * handles saving updates to existing appts
      * @param event
      */
     @FXML
     void handleSaveUpdatesButton(ActionEvent event) {
-
-        // Check if appt is selected
+        // Check if an appointment is selected
         if (currentAppt == null) {
             Dialogs.showErrorDialog("Error", "No appointment selected for update.");
             return;
@@ -321,65 +308,102 @@ public class ModifyApptController {
         String updateDescription = updateDescriptionField.getText();
         String updateLocation = updateLocationField.getText();
         String updateType = updateTypeField.getText();
-        //String updateContact = updateContactNameCombo.getValue();
 
+        // User's local time zone
+        ZoneId userLocalZoneId = ZoneId.systemDefault();
 
-        //handles date/time field formatting
+        // Parse the start and end date/time
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.US);
-
-        // Parse/convert the start date/time to UTC
-        LocalDateTime updatedStart;
+        LocalDateTime updatedStart, updatedEnd;
         try {
-            updatedStart = LocalDateTime.parse(updateStartApptField.getText(), formatter).atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+            updatedStart = LocalDateTime.parse(updateStartApptField.getText(), formatter);
+            updatedEnd = LocalDateTime.parse(updateEndApptField.getText(), formatter);
         } catch (DateTimeParseException e) {
-            Dialogs.showErrorDialog("Error", "Invalid start date/time format.");
+            Dialogs.showErrorDialog("Error", "Invalid date/time format.");
             return;
         }
 
-        // Parse/convert the end date/time to UTC
-        LocalDateTime updatedEnd;
+        // Convert local times to ET for business hour validation
+        LocalDateTime updatedStartET = User_DAO_Impl.convertToET(updatedStart, userLocalZoneId);
+        LocalDateTime updatedEndET = User_DAO_Impl.convertToET(updatedEnd, userLocalZoneId);
+
+        // Validate business hours in ET
+        if (!User_DAO_Impl.isWithinBusinessHours(updatedStartET) || !User_DAO_Impl.isWithinBusinessHours(updatedEndET)) {
+            Dialogs.showErrorDialog("Error", "Appointment time must be within business hours (8:00 AM to 10:00 PM ET).");
+            return;
+        }
+
+        // Convert ET times to local times for table view
+        updatedStart = User_DAO_Impl.convertFromET(updatedStartET, userLocalZoneId);
+        updatedEnd = User_DAO_Impl.convertFromET(updatedEndET, userLocalZoneId);
+
+        // Get info from the current appointment
+        int customerId = currentAppt.getCustomer_ID();
+        int appointmentId = currentAppt.getAppointmentId();
+
+        // Check for overlapping appointments
+        if (hasOverlappingAppointment(customerId, updatedStart, updatedEnd, appointmentId)) {
+            Dialogs.showErrorDialog("Error", "This appointment overlaps with another appointment for this customer.");
+            return;
+        }
+
+        // Convert local times to UTC for storage
+        LocalDateTime startApptUtc = User_DAO_Impl.convertToUTC(updatedStart, ZoneId.systemDefault());
+        LocalDateTime endApptUtc = User_DAO_Impl.convertToUTC(updatedEnd, ZoneId.systemDefault());
+
+        int updateCustomerId = -1;
+        int updateUserId = -1;
+        int contactId = -1;
+
         try {
-            updatedEnd = LocalDateTime.parse(updateEndApptField.getText(), formatter).atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
-        } catch (DateTimeParseException e) {
-            Dialogs.showErrorDialog("Error", "Invalid end date/time format.");
+            // Parse customer ID
+            updateCustomerId = Integer.parseInt(updateCustomerIDField.getText());
+        } catch (NumberFormatException e) {
+            System.err.println("Error parsing customer ID: " + e.getMessage());
+            Dialogs.showErrorDialog("Error", "Invalid customer ID format.");
             return;
         }
 
-        // Convert time to UTC
-        LocalDateTime updatedStartTime = convertToUTC(updatedStart);
-        LocalDateTime updatedEndTime = convertToUTC(updatedEnd);
-
-        //parse customer and user IDs
-        int updateCustomerId = parseInteger(updateCustomerIDField.getText());
-        int updateUserId = parseInteger(updateUserIDField.getText());
-        if (updateCustomerId == -1 || updateUserId == -1) {
-            System.out.println("Debug: Error parsing customer/user IDs");
+        try {
+            // Parse user ID
+            updateUserId = Integer.parseInt(updateUserIDField.getText());
+        } catch (NumberFormatException e) {
+            System.err.println("Error parsing user ID: " + e.getMessage());
+            Dialogs.showErrorDialog("Error", "Invalid user ID format.");
             return;
         }
 
-        // Get contact ID from contact name
+        try {
+            // Get contact ID
+            String updateContactName = updateContactNameCombo.getValue();
+            contactId = AppointmentQuery.getContactIdByName(updateContactName);
+            if (contactId == -1) {
+                throw new IllegalArgumentException("Contact not found.");
+            }
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error: " + e.getMessage());
+            Dialogs.showErrorDialog("Error", e.getMessage());
+            return;
+        }
+
         String updateContactName = updateContactNameCombo.getValue();
-        System.out.println("Selected contact name: " + updateContactName); // Debugging line
-        int contactId = Query.getContactIdByName(updateContactName);
-        if (contactId == -1) {
-            Dialogs.showErrorDialog("Error", "Contact not found.");
-            return;
-        }
 
         // Validate input data
-        if (!Dialogs.isApptValid(updateTitle, updateDescription, updateLocation, updateType, updateContactName, updatedStartTime, updatedEndTime, updateCustomerId, updateUserId)) {
-            System.out.println("debug: validation is false");
+        if (!Dialogs.isApptValid(updateTitle, updateDescription, updateLocation, updateType, updateContactName, updatedStart, updatedEnd, updateCustomerId, updateUserId)) {
             return;
         }
 
         // Update the appointment in the database
-        boolean success = Query.updateAppointment(updateTitle, updateDescription, updateLocation, updateType, updatedStart, updatedEnd, updateCustomerId, updateUserId, contactId, currentAppt.getAppointmentId());
+        boolean success = AppointmentQuery.updateAppointment(updateTitle, updateDescription, updateLocation, updateType, startApptUtc, endApptUtc, updateCustomerId, updateUserId, contactId, currentAppt.getAppointmentId());
         if (success) {
             Dialogs.showSuccessDialog("Success", "Appointment updated successfully.");
+            currentAppt.setStart(updatedStart);
+            currentAppt.setEnd(updatedEnd);
         } else {
             Dialogs.showErrorDialog("Error", "Failed to update appointment.");
         }
     }
+
 
     @FXML
     void handleUpdateContactCombo(ActionEvent event) {
@@ -415,29 +439,6 @@ public class ModifyApptController {
     }
 
 
-    //converts UTC to local time
-    public LocalDateTime convertToLT(LocalDateTime timeUtc) {
-        ZoneId utcZone = ZoneId.of("UTC");
-        ZoneId localZone = ZoneId.systemDefault();
-        return timeUtc.atZone(utcZone).withZoneSameInstant(localZone).toLocalDateTime();
-    }
-
-    // Converts local time to UTC
-    public LocalDateTime convertToUTC (LocalDateTime timeLocal) {
-        ZoneId localZone = ZoneId.systemDefault();
-        ZoneId utcZone = ZoneId.of("UTC");
-        return timeLocal.atZone(localZone).withZoneSameInstant(utcZone).toLocalDateTime();
-    }
-
-    private LocalDateTime parseDateTime(String dateTimeStr, DateTimeFormatter formatter) {
-        try {
-            return LocalDateTime.parse(dateTimeStr, formatter);
-        } catch (DateTimeParseException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     private int parseInteger(String intStr) {
         try {
             return Integer.parseInt(intStr);
@@ -455,6 +456,28 @@ public class ModifyApptController {
     public void selectTab(int tabIndex) {
         modifyAppointmentTabPane.getSelectionModel().select(tabIndex);
     }
+
+    public boolean hasOverlappingAppointment(int customerId, LocalDateTime updatedStart, LocalDateTime updatedEnd, int appointmentIdToExclude) {
+        List<Appointments> allAppointments = AppointmentQuery.getAllAppointments();
+
+        for (Appointments appointment : allAppointments) {
+            // Check if the appt is for the same customer and not the one to exclude
+            if (appointment.getCustomer_ID() == customerId && (appointmentIdToExclude == -1 || appointment.getAppointmentId() != appointmentIdToExclude)) {
+                LocalDateTime start = appointment.getStart();
+                LocalDateTime end = appointment.getEnd();
+
+                // Check for overlap
+                boolean overlaps = !updatedStart.isAfter(end) && !updatedEnd.isBefore(start);
+                if (overlaps) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+
 
 }
 

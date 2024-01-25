@@ -3,12 +3,12 @@ package DAO;
 import Model.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+
+import java.sql.*;
 import java.time.LocalDateTime;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 
 public class Query {
@@ -18,36 +18,69 @@ public class Query {
         return "SELECT Password FROM users WHERE User_Name = ?";
     }
 
-    //method for loading the Appointments TableView for the AppointmentController
-    public static ObservableList<Appointments> getAllAppointments() {
+    /**
+     * Validates user's credentials.
+     *
+     * @param userName the username in the database
+     * @param password the password in the database
+     * @return true if the credentials are valid, false otherwise
+     */
 
-        ObservableList<Appointments> appointments = FXCollections.observableArrayList(); //hold all appt objects
+    public static boolean isValidLogin(String userName, String password) {
 
-        try
-            (Connection conn = JDBC.openConnection();
-             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM appointments");
-             ResultSet rs = stmt.executeQuery()) {
+        Connection conn = null;
 
-                while (rs.next()) {
-                    int appointmentId = rs.getInt("Appointment_ID");
-                    String title = rs.getString("Title");
-                    String description = rs.getString("Description");
-                    String location = rs.getString("Location");
-                    String type = rs.getString("Type");
-                    LocalDateTime start = rs.getTimestamp("Start").toLocalDateTime();
-                    LocalDateTime end = rs.getTimestamp("End").toLocalDateTime();
-                    int customerId = rs.getInt("Customer_ID");
-                    int userId = rs.getInt("User_ID");
-                    int contactId = rs.getInt("Contact_ID");
+        try {
+            // connect to database
+            conn = JDBC.openConnection();
 
-                    Appointments appointment = new Appointments(appointmentId, title, description, location, type, start, end, customerId, userId, contactId);
-                    appointments.add(appointment);
+            //use checkCredentials query from Query class
+            PreparedStatement pstmt = conn.prepareStatement(Query.checkCredentials());
+            pstmt.setString(1, userName);
+            ResultSet rs = pstmt.executeQuery();
+
+
+            if (rs.next()) {
+                // Check password
+                String retrievedPassword = rs.getString("Password");
+                if (retrievedPassword != null && retrievedPassword.equals(password)) {
+                    return true; // The password matches
                 }
-            } catch (SQLException | ClassNotFoundException e) {
-                e.printStackTrace();
             }
-            return appointments;
+        } catch (SQLException e) {
+            e.printStackTrace(); //prints stack trace of SQLException
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        } finally {
+            JDBC.closeConnection(conn);
         }
+        return false;
+    }
+
+    // Method to get user details by username
+    public static Users getUserByUsername(String username) {
+        String query = "SELECT * FROM users WHERE User_Name = ?";
+
+        try (Connection conn = JDBC.openConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, username);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    int userId = rs.getInt("User_ID");
+                    String foundUsername = rs.getString("User_Name");
+                    String password = rs.getString("Password"); // Handle with care, consider security implications
+
+                    return new Users(userId, foundUsername, password);
+                }
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+            // Handle exception
+        }
+        return null; // Return null if user is not found or in case of an exception
+    }
 
     /**
      * method for loading all customers
@@ -250,127 +283,26 @@ public class Query {
         return allContacts;
     }
 
-    // Method to get existing contact name for a specific existing appointment
-    public String getContactNameForAppointment(int appointmentId) {
+    public static ObservableList<ReportAppointment> getTotalAppointmentsByTypeAndMonth() {
+        ObservableList<ReportAppointment> reportData = FXCollections.observableArrayList();
 
-        String contactName = null;
-        String sql = "SELECT contacts.Contact_Name " +
-                "FROM appointments " +
-                "JOIN contacts ON appointments.Contact_ID = contacts.Contact_ID " +
-                "WHERE appointments.Appointment_ID = ?";
-
+        String query = "SELECT COUNT(*), Type, MONTH(Start) as Month FROM appointments GROUP BY Type, MONTH(Start);";
         try (Connection conn = JDBC.openConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
 
-            pstmt.setInt(1, appointmentId); // Set the appointment ID
-
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                contactName = rs.getString("Contact_Name");
+            while (rs.next()) {
+                String type = rs.getString("Type");
+                int month = rs.getInt("Month");
+                int count = rs.getInt(1); // COUNT(*) is the first column
+                reportData.add(new ReportAppointment(type, month, count));
             }
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-
-        return contactName;
+        return reportData;
     }
 
-    //method for adding an appt
-    public static boolean addAppointment(String title, String description, String location, String type,
-                                         LocalDateTime start, LocalDateTime end, int customerId, int userId, int contactId) {
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String startDateTimeStr = start.format(formatter);
-        String endDateTimeStr = end.format(formatter);
-
-        String sql = "INSERT INTO appointments (Title, Description, Location, Type, Start, End, Customer_ID, User_ID, Contact_ID) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = JDBC.openConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, title);
-            pstmt.setString(2, description);
-            pstmt.setString(3, location);
-            pstmt.setString(4, type);
-            pstmt.setString(5, startDateTimeStr);
-            pstmt.setString(6, endDateTimeStr);
-            pstmt.setInt(7, customerId);
-            pstmt.setInt(8, userId);
-            pstmt.setInt(9, contactId);
-
-            int affectedRows = pstmt.executeUpdate();
-            return affectedRows > 0;
-        } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    //method for adding an appt
-    public static boolean updateAppointment(String title, String description, String location, String type,
-                                            LocalDateTime start, LocalDateTime end, int customerId, int userId,
-                                            int contactId, int appointmentId) {
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String startDateTimeStr = start.format(formatter);
-        String endDateTimeStr = end.format(formatter);
-
-        String sql = "UPDATE appointments SET Title = ?, Description = ?, Location = ?, Type = ?, Start = ?, End = ?, Customer_ID = ?, User_ID = ?, Contact_ID = ? " + // Removed extra parenthesis
-                "WHERE Appointment_ID = ?";
-        try (Connection conn = JDBC.openConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, title);
-            pstmt.setString(2, description);
-            pstmt.setString(3, location);
-            pstmt.setString(4, type);
-            pstmt.setString(5, startDateTimeStr);
-            pstmt.setString(6, endDateTimeStr);
-            pstmt.setInt(7, customerId);
-            pstmt.setInt(8, userId);
-            pstmt.setInt(9, contactId);
-            pstmt.setInt(10, appointmentId);
-
-            int affectedRows = pstmt.executeUpdate();
-            return affectedRows > 0;
-        } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-
-    //maps contact name to its ID
-    public static int getContactIdByName(String contactName) {
-        String sql = "SELECT Contact_ID FROM contacts WHERE Contact_Name = ?";
-        try (Connection conn = JDBC.openConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, contactName);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                return rs.getInt("Contact_ID");
-            }
-        } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return -1; // not found indicator
-    }
-
-    // Method to delete selected appointment
-    public static boolean deleteAppointment(int appointmentId) {
-        String sql = "DELETE FROM appointments WHERE Appointment_ID = ?";
-        try (Connection conn = JDBC.openConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, appointmentId);
-            int affectedRows = pstmt.executeUpdate();
-            return affectedRows > 0;
-        } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
 
 }
 
