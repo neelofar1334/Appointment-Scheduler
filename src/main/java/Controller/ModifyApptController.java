@@ -292,8 +292,11 @@ public class ModifyApptController {
         startAppt = Utility.convertFromET(startET, userLocalZoneId);
         endAppt = Utility.convertFromET(endET, userLocalZoneId);
 
+        // get contact from combobox for overlapping appts
+        int contactId = selectedContact.getContactId();
+
         // Check for overlapping appointments
-        if (hasOverlappingAppointment(customerId, startAppt, endAppt, -1)) {
+        if (hasOverlappingAppointment(customerId, contactId, startAppt, endAppt, -1)) {
             Dialogs.showErrorDialog("Error", "This appointment overlaps with another appointment for this customer.");
             return;
         }
@@ -370,9 +373,28 @@ public class ModifyApptController {
         int customerId = currentAppt.getCustomer_ID();
         int appointmentId = currentAppt.getAppointmentId();
 
+        //get contact name for combo box and overlap method
+        int contactId = -1;
+
+        try {
+            String updateContactName = updateContactNameCombo.getValue();
+            if (updateContactName == null || updateContactName.isEmpty()) {
+                throw new IllegalArgumentException("No contact selected.");
+            }
+            contactId = AppointmentQuery.getContactIdByName(updateContactName);
+            if (contactId == -1) {
+                throw new IllegalArgumentException("Contact not found.");
+            }
+        } catch (IllegalArgumentException e) {
+            Dialogs.showErrorDialog("Error", e.getMessage());
+            return;
+        }
+
+        String updateContactName = updateContactNameCombo.getValue();
+
         // Check for overlapping appointments
-        if (hasOverlappingAppointment(customerId, updatedStart, updatedEnd, appointmentId)) {
-            Dialogs.showErrorDialog("Error", "This appointment overlaps with another appointment for this customer.");
+        if (hasOverlappingAppointment(customerId, contactId, updatedStart, updatedEnd, appointmentId)) {
+            Dialogs.showErrorDialog("Error", "This appointment overlaps with another appointment.");
             return;
         }
 
@@ -382,7 +404,6 @@ public class ModifyApptController {
 
         int updateCustomerId = -1;
         int updateUserId = -1;
-        int contactId = -1;
 
         try {
             // Parse customer ID
@@ -401,21 +422,6 @@ public class ModifyApptController {
             Dialogs.showErrorDialog("Error", "Invalid user ID format.");
             return;
         }
-
-        try {
-            // Get contact ID
-            String updateContactName = updateContactNameCombo.getValue();
-            contactId = AppointmentQuery.getContactIdByName(updateContactName);
-            if (contactId == -1) {
-                throw new IllegalArgumentException("Contact not found.");
-            }
-        } catch (IllegalArgumentException e) {
-            System.err.println("Error: " + e.getMessage());
-            Dialogs.showErrorDialog("Error", e.getMessage());
-            return;
-        }
-
-        String updateContactName = updateContactNameCombo.getValue();
 
         // Validate input data
         if (!Dialogs.isApptValid(updateTitle, updateDescription, updateLocation, updateType, updateContactName, updatedStart, updatedEnd, updateCustomerId, updateUserId)) {
@@ -486,22 +492,32 @@ public class ModifyApptController {
      * @param appointmentIdToExclude The ID of the appointment to exclude from the overlap check.
      * @return true if there is an overlapping appointment, false otherwise.
      */
-    public boolean hasOverlappingAppointment(int customerId, LocalDateTime updatedStart, LocalDateTime updatedEnd, int appointmentIdToExclude) {
+    public boolean hasOverlappingAppointment(int customerId, int contactId, LocalDateTime updatedStart, LocalDateTime updatedEnd, int appointmentIdToExclude) {
         List<Appointments> allAppointments = AppointmentQuery.getAllAppointments();
         for (Appointments appointment : allAppointments) {
-            // Check if the appt is for the same customer and not the one to exclude
-            if (appointment.getCustomer_ID() == customerId && (appointmentIdToExclude == -1 || appointment.getAppointmentId() != appointmentIdToExclude))
-            {
+            // Check if the appointment is not the one to exclude
+            if (appointment.getAppointmentId() != appointmentIdToExclude) {
                 LocalDateTime start = appointment.getStart();
                 LocalDateTime end = appointment.getEnd();
-                // Check for overlap
-                boolean overlaps = !updatedStart.isAfter(end) && !updatedEnd.isBefore(start);
-                if (overlaps) {
+
+                // Check for time overlap
+                boolean isTimeOverlapping = !updatedStart.isAfter(end) && !updatedEnd.isBefore(start);
+
+                // Check if the overlapping appointment involves the same contact
+                boolean isSameContact = appointment.getContact_ID() == contactId;
+
+                // Check if the overlapping appointment involves the same customer
+                boolean isSameCustomer = appointment.getCustomer_ID() == customerId;
+
+                // If the time overlaps and either the contact or the customer is the same, return true
+                if (isTimeOverlapping && (isSameContact || isSameCustomer)) {
                     return true;
                 }
             }
-        }    return false;
+        }
+        return false;
     }
+
 
 
 
