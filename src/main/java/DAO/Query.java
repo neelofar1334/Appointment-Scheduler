@@ -3,29 +3,28 @@ package DAO;
 import Model.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-
 import java.sql.*;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
-
+/**
+ * Contains query methods for log in and customer controllers
+ */
 public class Query {
 
-    //method for checking the username against the password for the LogInController
+    /**
+     * Provides the SQL query for checking user credentials.
+     * @return SQL query string.
+     */
     public static String checkCredentials() {
         return "SELECT Password FROM users WHERE User_Name = ?";
     }
 
     /**
-     * Validates user's credentials.
+     * Validates user's login credentials.
      *
      * @param userName the username in the database
      * @param password the password in the database
      * @return true if the credentials are valid, false otherwise
      */
-
     public static boolean isValidLogin(String userName, String password) {
 
         Connection conn = null;
@@ -57,7 +56,11 @@ public class Query {
         return false;
     }
 
-    // Method to get user details by username
+    /**
+     * Gets user details by username.
+     * @param username The username to search for.
+     * @return User object if found, null otherwise.
+     */
     public static Users getUserByUsername(String username) {
         String query = "SELECT * FROM users WHERE User_Name = ?";
 
@@ -77,14 +80,13 @@ public class Query {
             }
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
-            // Handle exception
         }
-        return null; // Return null if user is not found or in case of an exception
+        return null;
     }
 
     /**
-     * method for loading all customers
-     * @return
+     * Gets all customers from the database.
+     * @return ObservableList of all customers.
      */
     public static ObservableList<Customers> getAllCustomers() {
 
@@ -121,7 +123,10 @@ public class Query {
         return customers;
     }
 
-    //method for loading all countries from database into list
+    /**
+     * Gets all countries from the database.
+     * @return ObservableList of all countries.
+     */
     public static ObservableList<Countries> getAllCountries() {
 
         ObservableList<Countries> allCountries = FXCollections.observableArrayList();
@@ -145,7 +150,11 @@ public class Query {
         return allCountries;
     }
 
-    //method for getting states/divisions by their IDs for the modifyCustomerController
+    /**
+     * Gets a specific division by its ID.
+     * @param divisionId The division ID to search for.
+     * @return First_level_divisions object if found, null otherwise.
+     */
     public static First_level_divisions getDivisionById(int divisionId) {
 
         First_level_divisions firstLevelDivisions = null;
@@ -166,7 +175,12 @@ public class Query {
         return firstLevelDivisions;
     }
 
-    //method for getting divisions by countryID
+    /**
+     * Gets all divisions associated with a specific country.
+     *
+     * @param countryId The ID of the country.
+     * @return ObservableList of divisions for the given country.
+     */
     public static ObservableList<First_level_divisions> getAllDivisionsByCountry(int countryId) {
         ObservableList<First_level_divisions> divisions = FXCollections.observableArrayList();
 
@@ -190,7 +204,16 @@ public class Query {
         return divisions;
     }
 
-    //method for adding a customer
+    /**
+     * Adds a new customer to the database.
+     *
+     * @param name The name of the customer.
+     * @param address The address of the customer.
+     * @param postalCode The postal code of the customer.
+     * @param phone The phone number of the customer.
+     * @param divisionId The division ID of the customer.
+     * @return True if the customer is successfully added, false otherwise.
+     */
     public static boolean addCustomer(String name, String address, String postalCode, String phone, int divisionId) {
         String sql = "INSERT INTO customers (Customer_Name, Address, Postal_Code, Phone, Division_ID) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = JDBC.openConnection();
@@ -209,7 +232,17 @@ public class Query {
         }
     }
 
-    //method for updating a customer
+    /**
+     * Updates an existing customer in the database.
+     *
+     * @param customerId The ID of the customer to update.
+     * @param name The new name of the customer.
+     * @param address The new address of the customer.
+     * @param postalCode The new postal code of the customer.
+     * @param phone The new phone number of the customer.
+     * @param divisionId The new division ID of the customer.
+     * @return True if the customer is successfully updated, false otherwise.
+     */
     public static boolean updateCustomer(int customerId, String name, String address, String postalCode, String phone, int divisionId) {
         String sql = "UPDATE customers SET Customer_Name = ?, Address = ?, Postal_Code = ?, Phone = ?, Division_ID = ? WHERE Customer_ID = ?";
         try (Connection conn = JDBC.openConnection();
@@ -229,7 +262,11 @@ public class Query {
         }
     }
 
-    // Method to delete appointments for a specific customer
+    /**
+     * Deletes all appointments associated with a specific customer.
+     * @param customerId The ID of the customer whose appointments are to be deleted.
+     * @return True if appointments are successfully deleted, false otherwise.
+     */
     public static boolean deleteAppointmentsByCustomerId(int customerId) {
         String sql = "DELETE FROM appointments WHERE Customer_ID = ?";
         try (Connection conn = JDBC.openConnection();
@@ -244,7 +281,11 @@ public class Query {
         }
     }
 
-    //method to delete customers without appts
+    /**
+     * Deletes a customer from the database.
+     * @param customerId The ID of the customer to delete.
+     * @return True if the customer is successfully deleted, false otherwise.
+     */
     public static boolean deleteCustomer(int customerId) {
         String sql = "DELETE FROM customers WHERE Customer_ID = ?";
         try (Connection conn = JDBC.openConnection();
@@ -259,6 +300,10 @@ public class Query {
         }
     }
 
+    /**
+     * Gets all contacts from the database.
+     * @return ObservableList of all contacts.
+     */
     public static ObservableList<Contacts> getAllContacts() {
 
         ObservableList<Contacts> allContacts = FXCollections.observableArrayList();
@@ -281,26 +326,6 @@ public class Query {
             e.printStackTrace();
         }
         return allContacts;
-    }
-
-    public static ObservableList<ReportAppointment> getTotalAppointmentsByTypeAndMonth() {
-        ObservableList<ReportAppointment> reportData = FXCollections.observableArrayList();
-
-        String query = "SELECT COUNT(*), Type, MONTH(Start) as Month FROM appointments GROUP BY Type, MONTH(Start);";
-        try (Connection conn = JDBC.openConnection();
-             PreparedStatement stmt = conn.prepareStatement(query);
-             ResultSet rs = stmt.executeQuery()) {
-
-            while (rs.next()) {
-                String type = rs.getString("Type");
-                int month = rs.getInt("Month");
-                int count = rs.getInt(1); // COUNT(*) is the first column
-                reportData.add(new ReportAppointment(type, month, count));
-            }
-        } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return reportData;
     }
 
 

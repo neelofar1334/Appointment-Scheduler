@@ -2,7 +2,7 @@ package Controller;
 import DAO.Query;
 import Model.Countries;
 import Model.Customers;
-import Model.Dialogs;
+import DAO.Dialogs;
 import Model.First_level_divisions;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+/**
+ * Controller for modifying customers including adding and updating
+ */
 public class ModifyCustomerController implements Initializable {
 
     @FXML
@@ -78,7 +81,7 @@ public class ModifyCustomerController implements Initializable {
     }
 
     /**
-     * initialization for adding a new customer
+     * initializes form fields for adding a new customer
      */
     public void initializeAddCustomer() {
 
@@ -136,13 +139,6 @@ public class ModifyCustomerController implements Initializable {
         } else {
             System.out.println("Customer country is null");
         }
-            /*
-             POSSIBLE LAMBDA EXPRESSION
-             updateCountryCombo.getItems().stream()
-            .filter(c -> c.toString().equals(countryName))
-            .findFirst()
-            .ifPresent(updateCountryCombo::setValue);
-             */
 
         // Set the division after setting the country
         if (customerDivision != null) {
@@ -209,7 +205,7 @@ public class ModifyCustomerController implements Initializable {
     }
 
     /**
-     * method for saving new customers
+     * handles saving new customers and adding them to the database
      * @param event
      */
     @FXML

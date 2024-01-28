@@ -30,8 +30,8 @@
                               <Label text="Name" />
                               <Label text="Address" />
                               <Label text="Postal Code" />
-                              <Label text="State" />
                               <Label text="Country" />
+                              <Label text="State" />
                               <Label text="Phone Number" />
                            </children>
                         </VBox>
@@ -41,8 +41,8 @@
                               <TextField fx:id="addNameField" />
                               <TextField fx:id="addAddressField" />
                               <TextField fx:id="addPostalCodeField" />
-                              <ComboBox fx:id="addStateCombo" onAction="#handleAddStateCombo" prefWidth="150.0" />
                               <ComboBox fx:id="addCountryCombo" onAction="#handleAddCountryCombo" prefWidth="150.0" />
+                              <ComboBox fx:id="addStateCombo" onAction="#handleAddStateCombo" prefWidth="150.0" />
                               <TextField fx:id="addPhoneField" />
                            </children>
                         </VBox>
@@ -76,8 +76,8 @@
                               <Label text="Name" />
                               <Label text="Address" />
                               <Label text="Postal Code" />
-                              <Label text="State" />
                               <Label text="Country" />
+                              <Label text="State" />
                               <Label text="Phone Number" />
                            </children>
                         </VBox>
@@ -87,8 +87,8 @@
                               <TextField fx:id="updateNameField" />
                               <TextField fx:id="updateAddressField" />
                               <TextField fx:id="updatePostalCodeField" />
-                              <ComboBox fx:id="updateStateCombo" onAction="#handleUpdateStateCombo" prefWidth="150.0" />
                               <ComboBox fx:id="updateCountryCombo" onAction="#handleUpdateCountryCombo" prefWidth="150.0" />
+                              <ComboBox fx:id="updateStateCombo" onAction="#handleUpdateStateCombo" prefWidth="150.0" />
                               <TextField fx:id="updatePhoneField" />
                            </children>
                         </VBox>

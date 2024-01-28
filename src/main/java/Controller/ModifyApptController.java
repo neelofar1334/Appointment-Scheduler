@@ -1,7 +1,8 @@
 package Controller;
 import DAO.AppointmentQuery;
+import DAO.Dialogs;
 import DAO.Query;
-import DAO.User_DAO_Impl;
+import DAO.Utility;
 import Model.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -23,6 +24,10 @@ import java.util.ResourceBundle;
 import static DAO.Query.getAllContacts;
 import java.time.ZoneId;
 
+/**
+ * Controller class for viewing in a tableview and modifying appointments
+ * Including adding, deleting, and updating appointments
+ */
 public class ModifyApptController {
 
     //This screen contains two tabs
@@ -97,19 +102,30 @@ public class ModifyApptController {
     private ObservableList<Appointments> allAppointments = FXCollections.observableArrayList(); //holds all appointments from database
 
 
+    /**
+     * Initializes controller
+     * Sets up default values for Add Appointment tab
+     * Populates the contact ComboBox
+     *
+     * @param url The location used to resolve relative paths for the root object, or null if unknown.
+     * @param resourceBundle The resources used to localize the root object, or null if not localized.
+     */
     public void initialize(URL url, ResourceBundle resourceBundle) {
         initializeAddAppt();
         populateContactCombo();
     }
 
-        /**
-         * sets current selected appt
-         * @param appt
-         */
-        public void setCurrentAppt(Appointments appt) {
+    /**
+     * sets current appointment to be modified
+     * @param appt
+     */
+    public void setCurrentAppt(Appointments appt) {
         this.currentAppt = appt;
     }
 
+    /**
+     * Initializes fields in Add Appointment tab with default/empty values
+     */
     public void initializeAddAppt() {
 
         //clear or set default values for all fields
@@ -125,6 +141,11 @@ public class ModifyApptController {
 
     }
 
+    /**
+     * Initializes fields in Update Appointment tab with values from existing appointment
+     *
+     * @param appointments The appointment whose details are to be loaded into the fields for update.
+     */
     public void initializeUpdateAppt(Appointments appointments){
 
         //set values for fields from existing appt object
@@ -170,6 +191,10 @@ public class ModifyApptController {
         }
     }
 
+    /**
+     * Handles selection of contact in ComboBox.
+     * @param event
+     */
     @FXML
     void handleContactCombo(ActionEvent event) {
 
@@ -198,7 +223,9 @@ public class ModifyApptController {
     }
 
     /**
-     * handles saving a new appointment
+     * Handles saving new appt.
+     * Validates input data and adds new appt to database.
+     *
      * @param event
      */
     @FXML
@@ -252,18 +279,18 @@ public class ModifyApptController {
         ZoneId userLocalZoneId = ZoneId.systemDefault();
 
         // Convert local times to ET for business hour validation
-        LocalDateTime startET = User_DAO_Impl.convertToET(startAppt, userLocalZoneId);
-        LocalDateTime endET = User_DAO_Impl.convertToET(endAppt, userLocalZoneId);
+        LocalDateTime startET = Utility.convertToET(startAppt, userLocalZoneId);
+        LocalDateTime endET = Utility.convertToET(endAppt, userLocalZoneId);
 
         // Validate business hours in ET
-        if (!User_DAO_Impl.isWithinBusinessHours(startET) || !User_DAO_Impl.isWithinBusinessHours(endET)) {
+        if (!Utility.isWithinBusinessHours(startET) || !Utility.isWithinBusinessHours(endET)) {
             Dialogs.showErrorDialog("Error", "Appointment time must be within business hours (8:00 AM to 10:00 PM ET).");
             return;
         }
 
         // Convert ET times to local times for table view
-        startAppt = User_DAO_Impl.convertFromET(startET, userLocalZoneId);
-        endAppt = User_DAO_Impl.convertFromET(endET, userLocalZoneId);
+        startAppt = Utility.convertFromET(startET, userLocalZoneId);
+        endAppt = Utility.convertFromET(endET, userLocalZoneId);
 
         // Check for overlapping appointments
         if (hasOverlappingAppointment(customerId, startAppt, endAppt, -1)) {
@@ -272,8 +299,8 @@ public class ModifyApptController {
         }
 
         // Convert local times to UTC for storage
-        LocalDateTime startUTC = User_DAO_Impl.convertToUTC(startAppt, ZoneId.systemDefault());
-        LocalDateTime endUTC = User_DAO_Impl.convertToUTC(endAppt, ZoneId.systemDefault());
+        LocalDateTime startUTC = Utility.convertToUTC(startAppt, ZoneId.systemDefault());
+        LocalDateTime endUTC = Utility.convertToUTC(endAppt, ZoneId.systemDefault());
 
         // Validates input
         if (!Dialogs.isApptValid(titleField.getText(), descriptionField.getText(), locationField.getText(), typeField.getText(), selectedContact.getContactName(), startAppt, endAppt, customerId, userId)) {
@@ -292,7 +319,9 @@ public class ModifyApptController {
 
 
     /**
-     * handles saving updates to existing appts
+     * Handles saving updates to existing appt.
+     * Validates input data and updates appt details in database.
+     *
      * @param event
      */
     @FXML
@@ -324,18 +353,18 @@ public class ModifyApptController {
         }
 
         // Convert local times to ET for business hour validation
-        LocalDateTime updatedStartET = User_DAO_Impl.convertToET(updatedStart, userLocalZoneId);
-        LocalDateTime updatedEndET = User_DAO_Impl.convertToET(updatedEnd, userLocalZoneId);
+        LocalDateTime updatedStartET = Utility.convertToET(updatedStart, userLocalZoneId);
+        LocalDateTime updatedEndET = Utility.convertToET(updatedEnd, userLocalZoneId);
 
         // Validate business hours in ET
-        if (!User_DAO_Impl.isWithinBusinessHours(updatedStartET) || !User_DAO_Impl.isWithinBusinessHours(updatedEndET)) {
+        if (!Utility.isWithinBusinessHours(updatedStartET) || !Utility.isWithinBusinessHours(updatedEndET)) {
             Dialogs.showErrorDialog("Error", "Appointment time must be within business hours (8:00 AM to 10:00 PM ET).");
             return;
         }
 
         // Convert ET times to local times for table view
-        updatedStart = User_DAO_Impl.convertFromET(updatedStartET, userLocalZoneId);
-        updatedEnd = User_DAO_Impl.convertFromET(updatedEndET, userLocalZoneId);
+        updatedStart = Utility.convertFromET(updatedStartET, userLocalZoneId);
+        updatedEnd = Utility.convertFromET(updatedEndET, userLocalZoneId);
 
         // Get info from the current appointment
         int customerId = currentAppt.getCustomer_ID();
@@ -348,8 +377,8 @@ public class ModifyApptController {
         }
 
         // Convert local times to UTC for storage
-        LocalDateTime startApptUtc = User_DAO_Impl.convertToUTC(updatedStart, ZoneId.systemDefault());
-        LocalDateTime endApptUtc = User_DAO_Impl.convertToUTC(updatedEnd, ZoneId.systemDefault());
+        LocalDateTime startApptUtc = Utility.convertToUTC(updatedStart, ZoneId.systemDefault());
+        LocalDateTime endApptUtc = Utility.convertToUTC(updatedEnd, ZoneId.systemDefault());
 
         int updateCustomerId = -1;
         int updateUserId = -1;
@@ -407,28 +436,29 @@ public class ModifyApptController {
 
     @FXML
     void handleUpdateContactCombo(ActionEvent event) {
-
+        //no code needed here
     }
 
-    //populates contact combo box with all contact names
+    /**
+     * Populates contact ComboBox with all contact names.
+     * Uses a lambda expression to iterate over contacts list and add each contact name to ComboBox.
+     */
     public void populateContactCombo() {
-
-        // Retrieve the list of contacts
         allContacts = getAllContacts();
-
-        // Clear existing items
         contactNameCombo.getItems().clear();
         updateContactNameCombo.getItems().clear();
-
-        // Add each contact to the combo boxes
-        for (Contacts contacts : allContacts) {
-            String contactName = contacts.getContactName();
-            contactNameCombo.getItems().add(contactName);
-            updateContactNameCombo.getItems().add(contactName);
-        }
+        allContacts.forEach(contact -> {
+            contactNameCombo.getItems().add(contact.getContactName());
+            updateContactNameCombo.getItems().add(contact.getContactName());
+        });
     }
 
-    //method to find a contact by name
+    /**
+     * Finds contact by name from list of all contacts.
+     *
+     * @param name The name of contact to find.
+     * @return The found contacts object or null if not found.
+     */
     private Contacts findContactByName(String name) {
         for (Contacts contact : allContacts) {
             if (contact.getContactName().equals(name)) {
@@ -436,16 +466,6 @@ public class ModifyApptController {
             }
         }
         return null;
-    }
-
-
-    private int parseInteger(String intStr) {
-        try {
-            return Integer.parseInt(intStr);
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-            return -1;
-        }
     }
 
     /**
@@ -457,25 +477,33 @@ public class ModifyApptController {
         modifyAppointmentTabPane.getSelectionModel().select(tabIndex);
     }
 
+    /**
+     * Checks for overlapping appointments considering both customer and contact IDs.
+     *
+     * @param customerId The ID of the customer.
+     * @param updatedStart The start time of the new/updated appointment.
+     * @param updatedEnd The end time of the new/updated appointment.
+     * @param appointmentIdToExclude The ID of the appointment to exclude from the overlap check.
+     * @return true if there is an overlapping appointment, false otherwise.
+     */
     public boolean hasOverlappingAppointment(int customerId, LocalDateTime updatedStart, LocalDateTime updatedEnd, int appointmentIdToExclude) {
         List<Appointments> allAppointments = AppointmentQuery.getAllAppointments();
-
         for (Appointments appointment : allAppointments) {
             // Check if the appt is for the same customer and not the one to exclude
-            if (appointment.getCustomer_ID() == customerId && (appointmentIdToExclude == -1 || appointment.getAppointmentId() != appointmentIdToExclude)) {
+            if (appointment.getCustomer_ID() == customerId && (appointmentIdToExclude == -1 || appointment.getAppointmentId() != appointmentIdToExclude))
+            {
                 LocalDateTime start = appointment.getStart();
                 LocalDateTime end = appointment.getEnd();
-
                 // Check for overlap
                 boolean overlaps = !updatedStart.isAfter(end) && !updatedEnd.isBefore(start);
                 if (overlaps) {
                     return true;
                 }
             }
-        }
-
-        return false;
+        }    return false;
     }
+
+
 
 
 

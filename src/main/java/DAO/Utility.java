@@ -1,7 +1,6 @@
 package DAO;
 
 import Model.Appointments;
-import Model.Dialogs;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -9,10 +8,22 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import static DAO.AppointmentQuery.getAllAppointmentsForUser;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 
-public class User_DAO_Impl {
+/**
+ * Utility class with methods for time conversions, validations, and logging.
+ */
+public class Utility {
 
-    // Converts from a specific time zone to UTC. don't call this for tableview
+    /**
+     * Converts a local date/time from a specific time zone to UTC.
+     * @param localTime The local time to be converted.
+     * @param userTimeZone The user's time zone.
+     * @return The local date/time in UTC.
+     */
     public static LocalDateTime convertToUTC(LocalDateTime localTime, ZoneId userTimeZone) {
         ZoneId utcZone = ZoneId.of("UTC");
         ZonedDateTime localZonedDateTime = localTime.atZone(userTimeZone);
@@ -20,48 +31,39 @@ public class User_DAO_Impl {
         return utcZonedDateTime.toLocalDateTime();
     }
 
-    // Converts from UTC to a specific time zone
-    public static LocalDateTime convertFromUTC(LocalDateTime utcTime, ZoneId userTimeZone) {
-        ZoneId utcZone = ZoneId.of("UTC");
-        ZonedDateTime utcZonedDateTime = utcTime.atZone(utcZone);
-        ZonedDateTime targetZonedDateTime = utcZonedDateTime.withZoneSameInstant(userTimeZone);
-        return targetZonedDateTime.toLocalDateTime();
-    }
-
+    /**
+     * Converts local date/time from a specific time zone to Eastern Time (ET).
+     * @param localDateTime The local date and time.
+     * @param userTimeZone The user's current time zone.
+     * @return The local date/time in Eastern Time.
+     */
     public static LocalDateTime convertToET(LocalDateTime localDateTime, ZoneId userTimeZone) {
-        // Eastern Time Zone ID
+
         ZoneId etZoneId = ZoneId.of("America/New_York");
-
-        // Convert the LocalDateTime to ZonedDateTime in the local time zone
         ZonedDateTime localZonedDateTime = localDateTime.atZone(userTimeZone);
-
-        // Convert the ZonedDateTime from the local time zone to Eastern Time
         ZonedDateTime etZonedDateTime = localZonedDateTime.withZoneSameInstant(etZoneId);
-
-        // Return the LocalDateTime part of the converted ZonedDateTime
         return etZonedDateTime.toLocalDateTime();
     }
 
+    /**
+     * Converts local date/time from Eastern Time (ET) to a specific time zone.
+     * @param etDateTime The Eastern Time date and time.
+     * @param userTimeZone The target time zone.
+     * @return The local date/time in the target time zone.
+     */
     public static LocalDateTime convertFromET(LocalDateTime etDateTime, ZoneId userTimeZone) {
-        // Eastern Time Zone ID
+
         ZoneId etZoneId = ZoneId.of("America/New_York");
-
-        // Convert the ET LocalDateTime to ZonedDateTime in Eastern Time
         ZonedDateTime etZonedDateTime = etDateTime.atZone(etZoneId);
-
-        // Convert the ZonedDateTime from Eastern Time to the target time zone
         ZonedDateTime targetZonedDateTime = etZonedDateTime.withZoneSameInstant(userTimeZone);
-
-        // Return the LocalDateTime part of the converted ZonedDateTime
         return targetZonedDateTime.toLocalDateTime();
     }
 
-    // Converts UTC time to the user's local time zone
-    public static LocalDateTime convertToLocalTime(LocalDateTime utcTime) {
-        ZoneId userTimeZone = ZoneId.systemDefault();
-        return utcTime.atZone(ZoneId.of("UTC")).withZoneSameInstant(userTimeZone).toLocalDateTime();
-    }
-
+    /**
+     * Checks if a given local date/time in Eastern Time (ET) is within business hours.
+     * @param etTime The time in Eastern Time to check.
+     * @return True if the time is within business hours, false otherwise.
+     */
     public static boolean isWithinBusinessHours(LocalDateTime etTime) {
         LocalTime BUSINESS_START_ET = LocalTime.of(8, 0); // 8:00 AM ET
         LocalTime BUSINESS_END_ET = LocalTime.of(22, 0); // 10:00 PM ET
@@ -69,7 +71,11 @@ public class User_DAO_Impl {
         return !time.isBefore(BUSINESS_START_ET) && !time.isAfter(BUSINESS_END_ET);
     }
 
-
+    /**
+     * Checks for upcoming appointments within the next 15 minutes for a logged-in user.
+     * @param userId The ID of the user.
+     * @param userTimeZone The user's time zone.
+     */
     public static void checkForUpcomingAppointments(int userId, ZoneId userTimeZone) {
 
         LocalDateTime nowLocal = LocalDateTime.now(userTimeZone); // Current local time
@@ -84,16 +90,12 @@ public class User_DAO_Impl {
 
         boolean upcomingAppointmentFound = false;
         for (Appointments appointment : appointments) {
-            LocalDateTime appointmentStartUtc = appointment.getStart(); // should be in UTC
+            LocalDateTime appointmentStartUtc = appointment.getStart();
             System.out.println("Processing appointment ID: " + appointment.getAppointmentId() + ", Start (UTC): " + appointmentStartUtc);
 
-            // Convert from UTC to user's local time
-            LocalDateTime appointmentStartLocal = User_DAO_Impl.convertFromUTC(appointmentStartUtc, userTimeZone);
-            System.out.println("Appointment Start (Local): " + appointmentStartLocal);
-
-            if (!upcomingAppointmentFound && appointmentStartLocal.isAfter(nowLocal) && appointmentStartLocal.isBefore(nowPlus15Minutes)) {
+            if (!upcomingAppointmentFound && appointmentStartUtc.isAfter(nowLocal) && appointmentStartUtc.isBefore(nowPlus15Minutes)) {
                 // Appointment within the next 15 minutes
-                Dialogs.showUpcomingAppointmentAlert(appointment.getAppointmentId(), appointmentStartLocal);
+                Dialogs.showUpcomingAppointmentAlert(appointment.getAppointmentId(), appointmentStartUtc);
                 upcomingAppointmentFound = true;
             }
         }
@@ -104,4 +106,23 @@ public class User_DAO_Impl {
         }
     }
 
+    /**
+     * Logs a user's login activity.
+     */
+    public class LoginActivityLogger {
+
+        public static void logActivity(String username, boolean isSuccess) {
+            String fileName = "login_activity.txt";
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true))) {
+                LocalDateTime now = LocalDateTime.now();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                String logEntry = String.format("Login Attempt: %s | Date/Time: %s | Success: %s%n",
+                        username, now.format(formatter), isSuccess ? "Yes" : "No");
+
+                writer.write(logEntry);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

@@ -1,5 +1,8 @@
 package Model;
 
+/**
+ * Class containing information for total number of customer appts by type and month.
+ */
 public class ReportAppointment {
     private String type;
     private int month;

@@ -1,5 +1,5 @@
 package Controller;
-import DAO.User_DAO_Impl;
+import DAO.Utility;
 import Model.Users;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -16,7 +16,10 @@ import javafx.scene.control.Button;
 import java.io.IOException;
 import static DAO.Query.*;
 
-
+/**
+ * Controller handles and tracks user log-ins
+ * Implements username/password validation
+ */
 public class LogInController {
 
     @FXML
@@ -31,6 +34,9 @@ public class LogInController {
     private TextField usernameField;
     private ZoneId userTimeZone;
 
+    /**
+     * initializes screen with user's location/time zone
+     */
     public void initialize() {
 
         //get user's location via zoneID
@@ -40,6 +46,11 @@ public class LogInController {
         locationLabel.setText(userTimeZone.toString());
 
     }
+
+    /**
+     * handles user log-in, validation, and tracking of log-in attempts
+     * @param event
+     */
     @FXML
     void handleSubmitLogIn(ActionEvent event) {
 
@@ -56,6 +67,8 @@ public class LogInController {
             // Validate credentials
             if (isValidLogin(usernameField.getText(), passwordField.getText())) {
                 errorLabel.setText(resources.getString("login.success"));
+                // Log successful login attempt
+                Utility.LoginActivityLogger.logActivity(usernameField.getText(), true);
 
                 //get user details
                 Users loggedInUser = getUserByUsername(usernameField.getText());
@@ -66,7 +79,7 @@ public class LogInController {
                     // Check for upcoming appointments via userId
                     ZoneId userTimeZone = ZoneId.systemDefault();
                     System.out.println("User's time zone: " + userTimeZone);
-                    User_DAO_Impl.checkForUpcomingAppointments(loggedInUser.getUserId(), userTimeZone);
+                    Utility.checkForUpcomingAppointments(loggedInUser.getUserId(), userTimeZone);
 
                     //go to main menu
                     System.out.println("Navigating to directory screen");
@@ -85,6 +98,8 @@ public class LogInController {
                 }
             } else {
                 errorLabel.setText(resources.getString("error.login.invalid"));
+                // Log unsuccessful login attempt
+                Utility.LoginActivityLogger.logActivity(usernameField.getText(), false);
             }
         }
     }

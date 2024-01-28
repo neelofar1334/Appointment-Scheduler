@@ -7,9 +7,16 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+
+/**
+ * Class contains methods for querying appointment data in the database.
+ */
 public class AppointmentQuery {
 
-    //method for loading the Appointments TableView for the AppointmentController
+    /**
+     * Retrieves all appointments from the database.
+     * @return An ObservableList of all appointments.
+     */
     public static ObservableList<Appointments> getAllAppointments() {
 
         ObservableList<Appointments> appointments = FXCollections.observableArrayList(); //hold all appt objects
@@ -41,9 +48,9 @@ public class AppointmentQuery {
     }
 
     /**
-     * method to get all appointments for a specific user
+     * Retrieves all appointments for a specific user
      * @param userId
-     * @return
+     * @return ObservableList of appointments for the specified user.
      */
     public static ObservableList<Appointments> getAllAppointmentsForUser(int userId) {
         ObservableList<Appointments> appointments = FXCollections.observableArrayList();
@@ -76,7 +83,11 @@ public class AppointmentQuery {
         return appointments;
     }
 
-    // Method to get existing contact name for a specific existing appointment
+    /**
+     * Gets the contact name for a specific appointment.
+     * @param appointmentId The ID of the appointment for which the contact name is required.
+     * @return The name of the contact associated with the given appointment.
+     */
     public static String  getContactNameForAppointment(int appointmentId) {
 
         String contactName = null;
@@ -102,7 +113,20 @@ public class AppointmentQuery {
         return contactName;
     }
 
-    //method for adding an appt??
+    /**
+     * Adds a new appointment to the database.
+     *
+     * @param title       The title of the appointment.
+     * @param description The description of the appointment.
+     * @param location    The location of the appointment.
+     * @param type        The type of the appointment.
+     * @param start       The start time of the appointment.
+     * @param end         The end time of the appointment.
+     * @param customerId  The ID of the customer for the appointment.
+     * @param userId      The ID of the user associated with the appointment.
+     * @param contactId   The ID of the contact associated with the appointment.
+     * @return True if the appointment is successfully added, false otherwise.
+     */
     public static boolean addAppointment(String title, String description, String location, String type,
                                          LocalDateTime start, LocalDateTime end, int customerId, int userId, int contactId) {
 
@@ -132,7 +156,21 @@ public class AppointmentQuery {
         }
     }
 
-    //method for updating an appt
+    /**
+     * Updates an existing appointment in the database.
+     *
+     * @param title         The new title of the appointment.
+     * @param description   The new description of the appointment.
+     * @param location      The new location of the appointment.
+     * @param type          The new type of the appointment.
+     * @param start         The new start time of the appointment.
+     * @param end           The new end time of the appointment.
+     * @param customerId    The ID of the customer for the appointment.
+     * @param userId        The ID of the user associated with the appointment.
+     * @param contactId     The ID of the contact associated with the appointment.
+     * @param appointmentId The ID of the appointment to be updated.
+     * @return True if the appointment is successfully updated, false otherwise.
+     */
     public static boolean updateAppointment(String title, String description, String location, String type,
                                             LocalDateTime start, LocalDateTime end, int customerId, int userId,
                                             int contactId, int appointmentId) {
@@ -164,7 +202,11 @@ public class AppointmentQuery {
         }
     }
 
-    //maps contact name to its ID
+    /**
+     * Maps a contact name to its corresponding ID.
+     * @param contactName The name of the contact.
+     * @return The ID of the contact or -1 if the contact is not found.
+     */
     public static int getContactIdByName(String contactName) {
         String sql = "SELECT Contact_ID FROM contacts WHERE Contact_Name = ?";
         try (Connection conn = JDBC.openConnection();
@@ -179,10 +221,14 @@ public class AppointmentQuery {
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-        return -1; // not found indicator
+        return -1;
     }
 
-    // Method to delete selected appointment
+    /**
+     * Deletes a selected appointment from the database.
+     * @param appointmentId The ID of the appointment to be deleted.
+     * @return True if the appointment is successfully deleted, false otherwise.
+     */
     public static boolean deleteAppointment(int appointmentId) {
         String sql = "DELETE FROM appointments WHERE Appointment_ID = ?";
         try (Connection conn = JDBC.openConnection();

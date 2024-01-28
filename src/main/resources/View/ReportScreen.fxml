@@ -16,7 +16,7 @@
       </Label>
       <VBox alignment="CENTER" layoutX="106.0" layoutY="74.0" spacing="20.0">
          <children>
-            <Button fx:id="additionalReport" mnemonicParsing="false" onAction="#handleAdditionalReport" text="Report #3" />
+            <Button fx:id="additionalReport" mnemonicParsing="false" onAction="#handleAdditionalReport" text="Total Customer Appointments" />
             <Button fx:id="custApptReport" mnemonicParsing="false" onAction="#handleCustApptReport" text="Monthly Customer Appointments" />
             <Button fx:id="contactSchedulesReport" mnemonicParsing="false" onAction="#handleContactSchedulesReport" text="Contact Schedules" />
          </children>

@@ -1,8 +1,7 @@
 package Controller;
 import DAO.Query;
-import Model.Appointments;
 import Model.Customers;
-import Model.Dialogs;
+import DAO.Dialogs;
 import Model.First_level_divisions;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -19,6 +18,10 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import java.io.IOException;
 
+/**
+ * Controller class for viewing all customers and navigating to screens to modify them
+ * Including adding, deleting, and updating customers
+ */
 public class CustomerController {
 
     @FXML
@@ -48,6 +51,10 @@ public class CustomerController {
     private ObservableList<Customers> allCustomers = FXCollections.observableArrayList(); //holds all customers from database
     private Customers currentCustomer;
 
+    /**
+     * Sets up TableView columns and loads all customers.
+     * Uses lambda expression to add a listener to the table's selection model to track the current selection.
+     */
     public void initialize() {
 
         //set up tableview columns and data
@@ -60,17 +67,15 @@ public class CustomerController {
 
         loadAllCustomers();
 
-        // Add a listener to the table's selection model
+        // Using lambda expression for better handling of table row selection
         customerTableView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            if (newSelection != null) {
-                currentCustomer = newSelection;
-            }
+            currentCustomer = newSelection != null ? newSelection : oldSelection;
         });
 
     }
 
     /**
-     * opens screen to add new customer
+     * Navigates to screen to add new customer.
      * @param event
      */
     @FXML
@@ -111,7 +116,7 @@ public class CustomerController {
             // Attempt to delete all appointments for the customer
             boolean appointmentsDeleted = Query.deleteAppointmentsByCustomerId(customerId);
 
-            // Attempt to delete the customer regardless of whether they had appointments
+            // Attempt to delete the customer regardless of whether they had appointments or not
             if (Query.deleteCustomer(customerId)) {
                 Dialogs.showSuccessDialog("Success", "Customer has been deleted.");
                 loadAllCustomers(); // Refresh the TableView
@@ -149,7 +154,7 @@ public class CustomerController {
     }
 
     /**
-     * opens screen for updating a customer
+     * Navigates to screen for updating a customer
      * based on the currently selected customer
      * @param event
      */
@@ -190,7 +195,7 @@ public class CustomerController {
 
 
     /**
-     * loads tableview with all customers
+     * loads all customers from the database and sets them in the tableview
      */
     private void loadAllCustomers() {
         allCustomers = Query.getAllCustomers();

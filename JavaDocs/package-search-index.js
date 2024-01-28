@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.example.dbclientapp"},{"l":"Controller"},{"l":"DAO"},{"l":"Model"}];updateSearchResults();

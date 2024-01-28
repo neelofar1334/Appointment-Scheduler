@@ -1,12 +1,16 @@
-package Model;
+package DAO;
+import Model.First_level_divisions;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ButtonType;
 
 import java.time.LocalDateTime;
 
-
+/**
+ * Utility methods for displaying dialog alerts and validating user inputs.
+ */
 public class Dialogs {
+
     /**
      * This method contains a way to alert users to errors with input.
      * @param header the text to be displayed as the dialog's header.
@@ -20,7 +24,11 @@ public class Dialogs {
         alert.showAndWait();
     }
 
-    //this method shows users a success message
+    /**
+     * Displays a success message dialog with a specified header and content.
+     * @param header   The text to be displayed as the dialog's header.
+     * @param content  The text to be displayed as the main content of the dialog.
+     */
     public static void showSuccessDialog(String header, String content) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Success");
@@ -30,28 +38,13 @@ public class Dialogs {
     }
 
     /**
-     * this method validates that a text field is not empty.
-     * displays error if it is empty.
-     * @param textField the field to validate.
-     * @param errorMessage error message to display if validation fails.
-     * @return true if the text field is not empty, false otherwise.
-     */
-    public static boolean validateTextField(TextField textField, String errorMessage) {
-        if (textField.getText().isEmpty()) {
-            showErrorDialog("Input Error", errorMessage);
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * validates input when adding or updating a customer
-     * @param name
-     * @param address
-     * @param postalCode
-     * @param phoneNumber
-     * @param selectedDivision
-     * @return
+     * Validates input fields for adding or updating a customer.
+     * @param name           The name of the customer.
+     * @param address        The address of the customer.
+     * @param postalCode     The postal code of the customer.
+     * @param phoneNumber    The phone number of the customer.
+     * @param selectedDivision The selected division for the customer.
+     * @return true if the input is valid, false otherwise.
      */
     public static boolean isInputValid(String name, String address, String postalCode, String phoneNumber, First_level_divisions selectedDivision) {
 
@@ -85,7 +78,19 @@ public class Dialogs {
 
     }
 
-    //validates fields when adding or updating an appt
+    /**
+     * Validates fields for adding or updating an appointment.
+     * @param title          The title of the appointment.
+     * @param description    The description of the appointment.
+     * @param location       The location of the appointment.
+     * @param contactName    The contact name associated with the appointment.
+     * @param type           The type of the appointment.
+     * @param start          The start time of the appointment.
+     * @param end            The end time of the appointment.
+     * @param customerId     The ID of the customer for the appointment.
+     * @param userId         The ID of the user associated with the appointment.
+     * @return true if the appointment fields are valid, false otherwise.
+     */
     public static boolean isApptValid(String title, String description, String location, String contactName, String type, LocalDateTime start, LocalDateTime end,
                                       int customerId, int userId) {
         String errorMessage = "";
@@ -114,8 +119,8 @@ public class Dialogs {
         if (customerId <= 0) {
             errorMessage += "No valid customer Id!\n";
         }
-        if (userId <= 0) {
-            errorMessage += "No valid user Id!\n";
+        if (userId < 0 || userId > 2) {
+            errorMessage += "Invalid User ID " + userId + "\n";
         }
 
         if (!errorMessage.isEmpty()) {
@@ -125,6 +130,11 @@ public class Dialogs {
         return true;
     }
 
+    /**
+     * Displays an alert for an upcoming appointment.
+     * @param appointmentId The ID of the upcoming appointment.
+     * @param date          The date and time of the upcoming appointment.
+     */
     public static void showUpcomingAppointmentAlert(int appointmentId, LocalDateTime date) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Upcoming Appointment Alert");
@@ -135,6 +145,9 @@ public class Dialogs {
         alert.showAndWait();
     }
 
+    /**
+     * Displays an alert indicating that there are no upcoming appointments in the next 15 minutes.
+     */
     public static void showNoUpcomingAppointmentsAlert() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Appointment Check");

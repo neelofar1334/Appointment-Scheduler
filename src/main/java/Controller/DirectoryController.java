@@ -13,18 +13,15 @@ public class DirectoryController {
 
     @FXML
     private Button apptButton;
-
     @FXML
     private Button customerButton;
-
     @FXML
     private Button exitButton;
-
     @FXML
     private Button reportsButton;
 
     /**
-     * handles button for going to the appointment screen/menu
+     * navigates to appointment screen/menu
      * @param event
      */
     @FXML
@@ -37,7 +34,7 @@ public class DirectoryController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/View/AppointmentScreen.fxml"));
             AnchorPane root = loader.load();
 
-            // Access the controller of the DirectoryScreen
+            // Access the controller
             AppointmentController appointmentController = loader.getController();
 
             stage.setScene(new Scene(root));
@@ -48,6 +45,10 @@ public class DirectoryController {
         }
     }
 
+    /**
+     * navigates to the customer screen/menu
+     * @param event
+     */
     @FXML
     void handleCustomerButton(ActionEvent event) {
 
@@ -78,6 +79,10 @@ public class DirectoryController {
         System.exit(0);
     }
 
+    /**
+     * navigates to the reports screen/menu
+     * @param event
+     */
     @FXML
     void handleReportsButton(ActionEvent event) {
 

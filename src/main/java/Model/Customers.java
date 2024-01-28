@@ -4,6 +4,10 @@ import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 
+/**
+ * Represents a customer entity in the app.
+ * Stores info about a customer incl. their ID, name, address, phone number.
+ */
 public class Customers {
 
     private final SimpleIntegerProperty customerId;
@@ -16,6 +20,19 @@ public class Customers {
     private final SimpleStringProperty divisionName;
     private final SimpleStringProperty countryName;
 
+    /**
+     * Constructs new customer object with these details:
+     *
+     * @param customerId The ID of the customer.
+     * @param custName The name of the customer.
+     * @param custAddress The address of the customer.
+     * @param postalCode The postal code of the customer.
+     * @param phoneNumber The phone number of the customer.
+     * @param divisionId The ID of the division the customer belongs to.
+     * @param countryId The ID of the country the customer belongs to.
+     * @param divisionName The name of the division the customer belongs to.
+     * @param countryName The name of the country the customer belongs to.
+     */
     public Customers(int customerId, String custName, String custAddress, String postalCode, String phoneNumber, int divisionId, int countryId, String divisionName, String countryName) {
         this.customerId = new SimpleIntegerProperty(customerId);
         this.custName = new SimpleStringProperty(custName);
@@ -28,6 +45,10 @@ public class Customers {
         this.countryName = new SimpleStringProperty(countryName);
     }
 
+    /**
+     * Getters and setters for customer object.
+     * @return
+     */
     public int getCustomerId() {
         return customerId.get();
     }

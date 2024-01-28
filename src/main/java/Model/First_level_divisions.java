@@ -3,6 +3,10 @@ package Model;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 
+/**
+ * Represents a state for the combobox.
+ * Stores information about a state incl. its ID and name.
+ */
 public class First_level_divisions {
 
     private final SimpleIntegerProperty divisionId;
@@ -40,7 +44,6 @@ public class First_level_divisions {
         this.countryId.set(countryId);
     }
 
-    //method to display division/state names as text for combo box
     public String toString() {
         return getDivisionName();
     }

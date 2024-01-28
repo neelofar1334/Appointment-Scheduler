@@ -1,13 +1,7 @@
 package Controller;
 import DAO.AppointmentQuery;
-import DAO.Query;
-import DAO.User_DAO_Impl;
 import Model.Appointments;
-import Model.Customers;
-import Model.Dialogs;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
+import DAO.Dialogs;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -23,69 +17,60 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Locale;
-
 import javafx.scene.control.ToggleGroup;
 
-
+/**
+ * Controller class for managing appointments.
+ * This class is responsible for handling navigation to appointment-related operations,
+ * including adding, deleting, updating, and filtering appointments based on time periods.
+ */
 public class AppointmentController {
 
     @FXML
     private TableView<Appointments> apptTableView;
-
     @FXML
     private TableColumn<Appointments, Integer> apptIDColumn;
-
     @FXML
     private TableColumn<Appointments, String> titleColumn;
-
     @FXML
     private TableColumn<Appointments, String> descriptionColumn;
-
     @FXML
     private TableColumn<Appointments, String> locationColumn;
-
     @FXML
     private TableColumn<Appointments, String> contactColumn;
-
     @FXML
     private TableColumn<Appointments, String> typeColumn;
-
     @FXML
     private TableColumn<Appointments, LocalDateTime> startApptColumn;
-
     @FXML
     private TableColumn<Appointments, LocalDateTime> endApptColumn;
-
     @FXML
     private TableColumn<Appointments, Integer> userIDColumn;
-
     @FXML
     private TableColumn<Appointments, Integer> customerIDColumn;
-
     @FXML
     private Button deleteApptButton;
-
     @FXML
     private Button addApptButton;
-
     @FXML
     private Button homeButton;
-
     @FXML
     private Button updateApptButton;
-
     @FXML
     private ToggleGroup viewToggleGroup;
-
     @FXML
     private RadioButton monthRadioButton;
-
     @FXML
     private RadioButton weekRadioButton;
 
     private ObservableList<Appointments> allAppointments = FXCollections.observableArrayList(); //holds all appts from database
     private ObservableList<Appointments> filteredAppointments = FXCollections.observableArrayList(); //holds filtered appts based on selection
 
+    /**
+     * Initializes the controller class.
+     * Sets up the table columns and loads all appointments.
+     * It also configures the radio buttons for filtering appointments by week or month.
+     */
     public void initialize() {
 
         //set up tableview columns and data
@@ -112,6 +97,12 @@ public class AppointmentController {
 
     }
 
+    /**
+     * Handles deleting an appointment
+     * Gets selected appointment from the table and attempts to delete it
+     * Refreshes table if successful in deletion
+     * @param event
+     */
     @FXML
     void handleDeleteApptButton(ActionEvent event) {
 
@@ -135,6 +126,11 @@ public class AppointmentController {
         }
     }
 
+    /**
+     * Handles adding a new appointment
+     * Opens add appointment screen
+     * @param event
+     */
     @FXML
     void handleaddApptButton(ActionEvent event) {
 
@@ -161,6 +157,11 @@ public class AppointmentController {
         }
 
     }
+
+    /**
+     * Navigates to home page/directory
+     * @param event
+     */
     @FXML
     void handleHomeButton(ActionEvent event) {
 
@@ -182,6 +183,11 @@ public class AppointmentController {
         }
     }
 
+    /**
+     * Handles updating an appointment
+     * Opens modifyApptScreen
+     * @param event
+     */
     @FXML
     void handleUpdateApptButton(ActionEvent event) {
 
@@ -218,16 +224,27 @@ public class AppointmentController {
 
     }
 
+    /**
+     * Filters appointments to display appts within the current month via radio button.
+     * @param event The action event triggered by the month view radio button.
+     */
     @FXML
     void handleMonthView(ActionEvent event) {
         filterAppointments("month");
     }
 
+    /**
+     * Filters appointments to display appts within the current week via radio button.
+     * @param event The action event triggered by the week view radio button.
+     */
     @FXML
     void handleWeekView(ActionEvent event) {
         filterAppointments("week");
     }
 
+    /**
+     * Loads all appointments from database and sets them in tableview.
+     */
     private void loadAllAppointments() {
         allAppointments = AppointmentQuery.getAllAppointments();
         apptTableView.setItems(allAppointments);
@@ -235,8 +252,11 @@ public class AppointmentController {
 
 
     /**
-     * method to filter appointments depending on the date, for the monthly and weekly radio buttons
+     * Filters appointments based on the specified period (week or month).
+     * Iterates over all appointments and adds those that match the criteria
+     * to the filteredAppointments list.
      *
+     * @param period The period for filtering (week or month).
      */
     private void filterAppointments(String period) {
 
@@ -255,7 +275,7 @@ public class AppointmentController {
     }
 
     /**
-     * Methods to determine if a date is within the current week and month
+     * Methods to determine if a date is within the current week
      * @param Start
      * @param now
      * @return
@@ -268,6 +288,12 @@ public class AppointmentController {
         return !Start.isBefore(startOfWeek) && !Start.isAfter(endOfWeek);
     }
 
+    /**
+     * Method to determine if a date is within the current month
+     * @param Start
+     * @param now
+     * @return
+     */
     private boolean isThisMonth(LocalDate Start, LocalDate now) {
 
         YearMonth yearMonth = YearMonth.from(now);
@@ -275,22 +301,5 @@ public class AppointmentController {
         LocalDate endOfMonth = yearMonth.atEndOfMonth();
         return !Start.isBefore(startOfMonth) && !Start.isAfter(endOfMonth);
     }
-
-    public void refreshTableView() {
-
-        allAppointments.clear();
-        allAppointments.addAll(AppointmentQuery.getAllAppointments());
-
-        for (Appointments appointment : allAppointments) {
-            // Convert UTC times to local times
-            LocalDateTime startLocal = User_DAO_Impl.convertFromUTC(appointment.getStart(), ZoneId.systemDefault());
-            LocalDateTime endLocal = User_DAO_Impl.convertFromUTC(appointment.getEnd(), ZoneId.systemDefault());
-            appointment.setStart(startLocal);
-            appointment.setEnd(endLocal);
-        }
-
-        apptTableView.setItems(allAppointments);
-    }
-
 
 }

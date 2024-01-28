@@ -3,6 +3,10 @@ package Model;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 
+/**
+ * Represents a country for the combobox.
+ * Stores information about a country incl. its ID and name.
+ */
 public class Countries {
 
     private final SimpleIntegerProperty countryId;
@@ -30,7 +34,6 @@ public class Countries {
         this.countryName.set(countryName);
     }
 
-    //method to display country names as text for combo box
     public String toString() {
         return getCountryName();
     }

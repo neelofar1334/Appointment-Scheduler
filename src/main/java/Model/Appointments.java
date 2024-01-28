@@ -5,6 +5,9 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import java.time.LocalDateTime;
 
+/**
+ * Represents an appointment in the application.
+ */
 public class Appointments {
 
     private final SimpleIntegerProperty appointmentId;
@@ -18,6 +21,20 @@ public class Appointments {
     private final SimpleIntegerProperty User_ID;
     private final SimpleIntegerProperty Contact_ID;
 
+    /**
+     * Constructs new appointment object with these details:
+     *
+     * @param appointmentId The ID of the appt.
+     * @param title         The title of the appt.
+     * @param description   The description of the appt.
+     * @param location      The location of the appt.
+     * @param type          The type of the appt.
+     * @param start         The start time of the appt.
+     * @param end           The end time of the appt.
+     * @param customerId    The ID of the customer for the appt.
+     * @param userId        The ID of the user associated with the appt.
+     * @param contactId     The ID of the contact for the appt.
+     */
     public Appointments(int appointmentId, String title, String description, String location, String type, LocalDateTime start, LocalDateTime end, int customerId, int userId, int contactId) {
         this.appointmentId = new SimpleIntegerProperty(appointmentId);
         this.Title = new SimpleStringProperty(title);
@@ -31,6 +48,10 @@ public class Appointments {
         this.Contact_ID = new SimpleIntegerProperty(contactId);
     }
 
+    /**
+     * Getters and setters for appointment object
+     * @return
+     */
     public int getAppointmentId() {
         return appointmentId.get();
     }

@@ -46,10 +46,10 @@
                               <TextField fx:id="locationField" />
                               <ComboBox fx:id="contactNameCombo" onAction="#handleContactCombo" prefWidth="150.0" />
                               <TextField fx:id="typeField" />
-                              <TextField fx:id="startApptField" text="yyyy-MM-dd HH:mm:ss" />
-                              <TextField fx:id="endApptField" text="yyyy-MM-dd HH:mm:ss" />
+                              <TextField fx:id="startApptField" promptText="yyyy-MM-dd HH:mm:ss" />
+                              <TextField fx:id="endApptField" promptText="yyyy-MM-dd HH:mm:ss" />
                               <TextField fx:id="customerIDField" />
-                              <TextField fx:id="userIDField" />
+                              <TextField fx:id="userIDField" promptText="Enter 1 or 2"/>
                            </children>
                         </VBox>
                      </children>
@@ -97,10 +97,10 @@
                               <TextField fx:id="updateLocationField" />
                               <ComboBox fx:id="updateContactNameCombo" onAction="#handleUpdateContactCombo" prefWidth="150.0" />
                               <TextField fx:id="updateTypeField" />
-                              <TextField fx:id="updateStartApptField" text="yyyy-MM-dd HH:mm:ss" />
-                              <TextField fx:id="updateEndApptField" text="yyyy-MM-dd HH:mm:ss" />
+                              <TextField fx:id="updateStartApptField" promptText="yyyy-MM-dd HH:mm:ss" />
+                              <TextField fx:id="updateEndApptField" promptText="yyyy-MM-dd HH:mm:ss" />
                               <TextField fx:id="updateCustomerIDField" />
-                              <TextField fx:id="updateUserIDField" />
+                              <TextField fx:id="updateUserIDField" promptText="Enter 1 or 2"/>
                            </children>
                         </VBox>
                      </children>
