@@ -6,10 +6,6 @@ This Scheduling Application is designed to manage and schedule appointments.
 It allows users to add, update, and delete customer records and appointments. 
 It features timezone-aware scheduling and reporting functionalities.
 
-Author: Neelofar Karimi
-
-Contact Information: nkarim1@wgu.edu
-
 Application Version: 1.0.0
 
 Date: 1/27/2024
